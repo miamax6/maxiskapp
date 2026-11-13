@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maquette carrousel 3D · MaxiskApp</title>
+<meta name="theme-color" content="#0A0D14">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
+<style>
+:root{--bg:#0A0D14;--fg:#F1F5F9;--muted:#9AA4B8;--line:rgba(255,255,255,.12);--gx:0;--gy:0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:400 16px/1.5 "Open Sans",system-ui,sans-serif;overflow:hidden;
+  user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+.app{height:100dvh;display:flex;flex-direction:column;padding:max(18px,env(safe-area-inset-top)) 0 max(14px,env(safe-area-inset-bottom))}
+header{padding:8px 22px 0}
+header small{color:var(--muted);font-size:14px;font-weight:600}
+header h1{margin:2px 0 0;font:700 30px/1.15 Poppins,sans-serif}
+.note{margin:6px 22px 0;color:var(--muted);font-size:13px}
+
+/* ═════ Carrousel ═════ */
+.stage{flex:1;position:relative;perspective:1000px;touch-action:pan-y;min-height:340px}
+.ring{position:absolute;inset:0;transform-style:preserve-3d;
+  transform:rotateX(calc(var(--gy) * 1deg)) rotateY(calc(var(--gx) * 1deg))}
+.card{position:absolute;left:50%;top:50%;width:216px;height:280px;margin:-150px 0 0 -108px;border-radius:30px;transform-style:preserve-3d;cursor:pointer;
+  will-change:transform,opacity}
+.face{position:absolute;inset:0;border-radius:inherit;overflow:hidden;
+  background:linear-gradient(160deg,#232B3D,#141A27 60%,#10151F);border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 40px 60px -30px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.18)}
+.face::before{content:"";position:absolute;inset:-30%;background:radial-gradient(closest-side,var(--c),transparent);opacity:.32;transform:translateY(-12%)}
+.glare{position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,10%),rgba(255,255,255,.22),transparent 55%)}
+.logo{position:absolute;left:50%;top:44px;width:128px;height:128px;margin-left:-64px;transform:translateZ(60px);
+  filter:drop-shadow(0 18px 16px rgba(0,0,0,.55))}
+.logo img,.logo .pk{width:100%;height:100%}
+.logo img{display:block}
+.pk{background:#F6EBDD;border-radius:26%;display:grid;place-items:center;color:var(--c)}
+.pk svg{width:56%;height:56%}
+.name{position:absolute;left:12px;right:12px;bottom:46px;text-align:center;transform:translateZ(36px);
+  font:700 22px/1.2 Poppins,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kind{position:absolute;left:12px;right:12px;bottom:22px;text-align:center;transform:translateZ(24px);color:var(--muted);font-size:13px;font-weight:600}
+/* reflet au sol */
+.card::after{content:"";position:absolute;left:8%;right:8%;bottom:-34px;height:26px;border-radius:50%;background:var(--c);filter:blur(22px);opacity:.35;transform:translateZ(-30px)}
+.card.press .face{filter:brightness(1.15)}
+
+.dots{display:flex;justify-content:center;gap:8px;margin:2px 0 12px}
+.dots button{width:8px;height:8px;padding:0;border:none;border-radius:99px;background:rgba(255,255,255,.3);transition:width .3s,background .3s;cursor:pointer}
+.dots button[aria-current="true"]{width:24px;background:#fff}
+
+/* ═════ Barre du bas ═════ */
+.dock{margin:0 14px;padding:12px 6px;border-radius:28px;background:rgba(255,255,255,.06);border:1px solid var(--line);
+  display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.dock::-webkit-scrollbar{display:none}
+.it{flex:0 0 76px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0;border-radius:18px;cursor:pointer;transition:transform .15s}
+.it:active{transform:scale(.9)}
+.it .ic{width:54px;height:54px;filter:drop-shadow(0 8px 8px rgba(0,0,0,.45))}
+.it .ic img,.it .ic .pk{width:100%;height:100%}
+.it .ic img{display:block}
+.it span{max-width:72px;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:#fff;color:#000;font-weight:700;padding:10px 16px;border-radius:14px;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion: reduce){.card{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><small id="today"></small><h1>Bonsoir Poulop</h1></header>
+  <p class="note">Maquette : glisse les cartes du doigt, penche le téléphone. Les tuiles n'ouvrent rien ici.</p>
+  <div class="stage" id="stage"><div class="ring" id="ring"></div></div>
+  <div class="dots" id="dots"></div>
+  <nav class="dock" id="dock" aria-label="Autres applis"></nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const P = "https://miamax6.github.io/";
+const pk = (path, c) => `<div class="pk" style="--c:${c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${path}</svg></div>`;
+const HOUSE = '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>';
+const SPEAK = '<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M12 6h.01"/><circle cx="12" cy="14" r="4"/><path d="M12 14h.01"/>';
+const RECEIPT = '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>';
+const FAVS = [
+  { n:"Budget", k:"Comptes du foyer", c:"#2F6B82", ic:`<img src="${P}mbauxdijsekta/icon.svg" alt="">` },
+  { n:"Jungle", k:"Plantes et graines", c:"#6B8E4E", ic:`<img src="${P}your-tiny-jungle/icons/icon.svg" alt="">` },
+  { n:"Yam's", k:"Feuille de score", c:"#B0603F", ic:`<img src="${P}yam-iamax/icon.svg" alt="">` },
+  { n:"Home Assistant", k:"Maison", c:"#0E7490", ic:pk(HOUSE, "#0E7490") }
+];
+const OTHERS = [
+  { n:"MusicCast", c:"#6D28D9", ic:pk(SPEAK, "#6D28D9") },
+  { n:"Tricount", c:"#0F766E", ic:pk(RECEIPT, "#0F766E") },
+  { n:"Home Assistant", c:"#0E7490", ic:pk(HOUSE, "#0E7490") },
+  { n:"Yam's", c:"#B0603F", ic:`<img src="${P}yam-iamax/icon.svg" alt="">` }
+];
+const $ = s => document.querySelector(s);
+const d = new Date().toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" });
+$("#today").textContent = d.charAt(0).toUpperCase() + d.slice(1);
+function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 1400); }
+
+/* Cartes */
+const ring = $("#ring"), N = FAVS.length;
+ring.innerHTML = FAVS.map((f, i) => `<div class="card" data-i="${i}" style="--c:${f.c}" role="button" aria-label="${f.n}">
+  <div class="face"><div class="glare"></div></div><div class="logo">${f.ic}</div><div class="name">${f.n}</div><div class="kind">${f.k}</div></div>`).join("");
+const cards = [...ring.children];
+$("#dots").innerHTML = FAVS.map((f, i) => `<button aria-label="${f.n}"></button>`).join("");
+const dots = [...$("#dots").children];
+$("#dock").innerHTML = OTHERS.map(o => `<div class="it" role="button"><div class="ic">${o.ic}</div><span>${o.n}</span></div>`).join("");
+$("#dock").addEventListener("click", e => { const it = e.target.closest(".it"); if (it) toast("Ouvrirait " + it.querySelector("span").textContent); });
+
+/* Position continue : pos = index affiché au centre (décimal pendant le glissement) */
+let pos = 0, vel = 0, target = 0, dragging = false, raf = 0;
+const wrap = x => ((x % N) + N) % N;
+function layout(){
+  cards.forEach((c, i) => {
+    let off = i - pos; off = ((off + N / 2) % N + N) % N - N / 2;      // -N/2..N/2 : boucle infinie
+    const a = Math.max(-2.2, Math.min(2.2, off));
+    const x = a * 150, z = -Math.abs(a) * 260, ry = -a * 34, sc = 1 - Math.min(1, Math.abs(a)) * .1;
+    c.style.transform = `translateX(${x}px) translateZ(${z}px) rotateY(${ry}deg) scale(${sc})`;
+    c.querySelector(".face").style.filter = `brightness(${1 - Math.min(1, Math.abs(a)) * .35})`;
+    c.style.opacity = Math.max(0, 1 - Math.max(0, Math.abs(off) - 1.2) * 1.4);
+    c.style.zIndex = 100 - Math.round(Math.abs(off) * 10);
+    c.querySelector(".glare").style.setProperty("--mx", (50 + a * 30 + gx * 3) + "%");
+  });
+  const cur = wrap(Math.round(pos));
+  dots.forEach((b, i) => b.setAttribute("aria-current", i === cur));
+}
+function tick(){
+  if (!dragging){
+    const k = .14;                                   // ressort vers la carte la plus proche
+    vel = vel * .78 + (target - pos) * k;
+    pos += vel;
+    if (Math.abs(target - pos) < .001 && Math.abs(vel) < .001){ pos = target; vel = 0; }
+  }
+  layout();
+  raf = (dragging || pos !== target || gyroMoving()) ? requestAnimationFrame(tick) : 0;
+}
+const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+
+/* Glisser au doigt */
+const stage = $("#stage");
+let sx = 0, spos = 0, lastX = 0, lastT = 0, speed = 0, moved = false, downCard = null;
+stage.addEventListener("pointerdown", e => {
+  dragging = true; moved = false; sx = lastX = e.clientX; spos = pos; lastT = performance.now(); speed = 0;
+  downCard = e.target.closest(".card"); if (downCard) downCard.classList.add("press");
+  stage.setPointerCapture(e.pointerId); kick();
+});
+stage.addEventListener("pointermove", e => {
+  if (!dragging) return;
+  const dx = e.clientX - sx; if (Math.abs(dx) > 6) moved = true;
+  pos = spos - dx / 190;
+  const t = performance.now(); speed = (e.clientX - lastX) / Math.max(1, t - lastT); lastX = e.clientX; lastT = t;
+});
+const up = () => {
+  if (!dragging) return; dragging = false;
+  if (downCard) downCard.classList.remove("press");
+  if (moved){ target = Math.round(pos - speed * 2.2); }        // lancer : la vitesse fait passer plusieurs cartes
+  else if (downCard){
+    const i = +downCard.dataset.i; let off = i - pos; off = ((off + N / 2) % N + N) % N - N / 2;
+    if (Math.abs(off) < .5){ toast("Ouvrirait " + FAVS[i].n); if (navigator.vibrate) navigator.vibrate(8); }
+    else target = Math.round(pos + off);
+  }
+  kick();
+};
+stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
+dots.forEach((b, i) => b.addEventListener("click", () => { let off = i - wrap(Math.round(pos)); if (off > N / 2) off -= N; if (off < -N / 2) off += N; target = Math.round(pos) + off; kick(); }));
+
+/* Inclinaison du téléphone */
+let gx = 0, gy = 0, tgx = 0, tgy = 0, base = null;
+const gyroMoving = () => Math.abs(tgx - gx) + Math.abs(tgy - gy) > .01;
+addEventListener("deviceorientation", e => {
+  if (e.beta == null) return;
+  if (!base) base = { b:e.beta, g:e.gamma };
+  base.b += (e.beta - base.b) * .004; base.g += (e.gamma - base.g) * .004;
+  tgx = Math.max(-14, Math.min(14, (e.gamma - base.g) * .6));
+  tgy = Math.max(-10, Math.min(10, -(e.beta - base.b) * .5));
+  if (!gyroRaf) gyroRaf = requestAnimationFrame(gyroStep);
+}, { passive:true });
+let gyroRaf = 0;
+function gyroStep(){
+  gx += (tgx - gx) * .12; gy += (tgy - gy) * .12;
+  document.documentElement.style.setProperty("--gx", gx.toFixed(2));
+  document.documentElement.style.setProperty("--gy", gy.toFixed(2));
+  layout();
+  gyroRaf = gyroMoving() ? requestAnimationFrame(gyroStep) : 0;
+}
+layout();
+</script>
+</body>
+</html>
