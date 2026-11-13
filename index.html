@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MaxiskApp</title>
+<meta name="description" content="Toutes nos applis au même endroit">
+<meta name="theme-color" content="#0b1020" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#e9edfb" media="(prefers-color-scheme: light)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+/* ═════ Jetons ═════ */
+:root{
+  color-scheme: light dark;
+  --bg:#0b1020; --fg:#f4f6ff; --muted:#a3abc8;
+  --glass:rgba(255,255,255,.075); --glass-hi:rgba(255,255,255,.14);
+  --edge:rgba(255,255,255,.16); --edge-hi:rgba(255,255,255,.34);
+  --shadow:0 18px 40px -18px rgba(0,0,0,.75), 0 2px 6px rgba(0,0,0,.25);
+  --b1:#7c3aed; --b2:#06b6d4; --b3:#f43f5e; --b4:#f59e0b;
+  --accent:#8b5cf6; --on-accent:#fff; --danger:#f43f5e; --ok:#22c55e;
+  --r:22px; --r-sm:14px;
+  --spring:cubic-bezier(.34,1.56,.64,1); --out:cubic-bezier(.22,1,.36,1);
+  --gx:0; --gy:0;               /* inclinaison globale (téléphone) */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg:#e9edfb; --fg:#0f172a; --muted:#4b5575;
+    --glass:rgba(255,255,255,.52); --glass-hi:rgba(255,255,255,.8);
+    --edge:rgba(255,255,255,.75); --edge-hi:rgba(255,255,255,1);
+    --shadow:0 18px 36px -20px rgba(40,50,110,.45), 0 2px 6px rgba(40,50,110,.12);
+    --b1:#a78bfa; --b2:#67e8f9; --b3:#fda4af; --b4:#fcd34d;
+    --accent:#6d28d9;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+html,body{margin:0;min-height:100%;color:var(--fg)}
+body{background:transparent}
+body{min-height:100dvh;overflow-x:hidden;line-height:1.5;font-size:16px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px}
+
+/* ═════ Fond animé ═════ */
+.sky{position:fixed;inset:-20vmax;z-index:-1;filter:blur(60px) saturate(1.2);pointer-events:none}
+.sky i{position:absolute;width:55vmax;height:55vmax;border-radius:50%;opacity:.55;animation:float 26s var(--out) infinite alternate}
+.sky i:nth-child(1){background:var(--b1);left:5%;top:0}
+.sky i:nth-child(2){background:var(--b2);right:0;top:20%;animation-duration:32s;animation-delay:-8s}
+.sky i:nth-child(3){background:var(--b3);left:25%;bottom:-5%;animation-duration:29s;animation-delay:-14s;opacity:.4}
+.sky i:nth-child(4){background:var(--b4);right:20%;bottom:10%;width:30vmax;height:30vmax;animation-duration:36s;opacity:.3}
+@keyframes float{to{transform:translate3d(8vmax,-6vmax,0) scale(1.15)}}
+.grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.07;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+/* ═════ Mise en page ═════ */
+.wrap{max-width:1100px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+header{display:flex;align-items:center;gap:12px;margin:6px 0 22px}
+.brand{flex:1;min-width:0}
+.brand h1{margin:0;font-size:clamp(26px,6vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.1;
+  background:linear-gradient(100deg,var(--fg) 30%,var(--accent) 70%,var(--b2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.ibtn{width:46px;height:46px;flex:none;display:grid;place-items:center;border-radius:15px;cursor:pointer;
+  background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
+  box-shadow:var(--shadow);transition:transform .25s var(--spring),background .2s}
+.ibtn:hover{background:var(--glass-hi)}
+.ibtn:active{transform:scale(.92)}
+.ibtn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+section{margin:0 0 26px}
+section h2{display:flex;align-items:center;gap:8px;margin:0 0 12px 4px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hint{color:var(--muted);font-size:14px;margin:4px 4px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:14px;perspective:900px}
+@media (min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:18px}}
+
+/* ═════ Tuiles en verre ═════ */
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  aspect-ratio:1/1;min-height:98px;padding:12px 8px;border-radius:var(--r);text-decoration:none;color:inherit;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  background:linear-gradient(145deg,var(--glass-hi),var(--glass) 55%);
+  border:1px solid var(--edge);border-top-color:var(--edge-hi);
+  backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.25);
+  transform-style:preserve-3d;
+  --rx:0deg; --ry:0deg; --s:1; --mx:50%; --my:20%;
+  transform:rotateX(calc(var(--rx) + var(--gy) * 1deg)) rotateY(calc(var(--ry) + var(--gx) * 1deg)) scale(var(--s));
+  transition:transform .45s var(--spring), box-shadow .3s, background .3s;
+  animation:pop .55s var(--spring) both; animation-delay:calc(var(--i,0) * 45ms)}
+.tile::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;mix-blend-mode:soft-light;opacity:.9;
+  background:radial-gradient(120px circle at var(--mx) var(--my),rgba(255,255,255,.55),transparent 60%)}
+.tile.press{--s:.92;transition:transform .12s var(--out)}
+@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.9)}}
+.ico{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font-size:30px;line-height:1;
+  background:linear-gradient(150deg,color-mix(in srgb,var(--c,#8b5cf6) 92%,white),color-mix(in srgb,var(--c,#8b5cf6) 70%,black));
+  box-shadow:0 10px 18px -8px color-mix(in srgb,var(--c,#8b5cf6) 85%,transparent), inset 0 1px 0 rgba(255,255,255,.45);
+  transform:translateZ(28px)}
+.ico img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.name{font-size:14px;font-weight:600;text-align:center;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;transform:translateZ(16px)}
+.tile .tag{position:absolute;bottom:6px;font-size:11px;color:var(--muted)}
+.tile.todo .ico{filter:grayscale(.8);opacity:.6}
+.tile.off{opacity:.45}
+
+/* Mode édition */
+.badge{position:absolute;top:-8px;right:-8px;width:34px;height:34px;border-radius:50%;display:none;place-items:center;cursor:pointer;
+  background:var(--bg);border:1px solid var(--edge-hi);box-shadow:var(--shadow);transform:translateZ(40px);color:var(--muted)}
+.badge.on{color:#f59e0b}
+.badge.on svg{fill:#f59e0b}
+.editing .badge{display:grid}
+.editing .tile{animation:pop .55s var(--spring) both, wob .9s ease-in-out infinite alternate;animation-delay:calc(var(--i,0) * 45ms), calc(var(--i,0) * -130ms)}
+@keyframes wob{from{rotate:-1.2deg}to{rotate:1.2deg}}
+.editing #favGrid .tile{touch-action:none}
+.tile.dragging{--s:1.08;z-index:5;animation:none;box-shadow:0 30px 50px -18px rgba(0,0,0,.7);opacity:.95}
+.add{border-style:dashed;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;color:var(--muted)}
+.add .ico{background:var(--glass);box-shadow:none;color:var(--fg)}
+
+/* ═════ Fenêtres ═════ */
+dialog{border:none;padding:0;background:transparent;color:inherit;max-width:min(560px,94vw);width:100%;max-height:92dvh}
+dialog::backdrop{background:rgba(5,8,20,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+dialog[open]{animation:dlg .35s var(--spring)}
+@keyframes dlg{from{opacity:0;transform:translateY(24px) scale(.96)}}
+.sheet{background:color-mix(in srgb,var(--bg) 78%,transparent);border:1px solid var(--edge);border-radius:26px;
+  backdrop-filter:blur(26px) saturate(1.5);-webkit-backdrop-filter:blur(26px) saturate(1.5);box-shadow:var(--shadow);
+  padding:20px;max-height:92dvh;overflow:auto}
+.sheet h3{margin:0 0 4px;font-size:21px}
+.sheet h4{margin:22px 0 8px;font-size:15px;display:flex;align-items:center;gap:8px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+label.f{display:block;margin:12px 0 0}
+label.f>span{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 5px 2px}
+.in{width:100%;min-height:46px;padding:10px 13px;border-radius:var(--r-sm);border:1px solid var(--edge);background:var(--glass);outline:none}
+.in:focus{border-color:var(--accent)}
+select.in{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 15px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
+select.in option{background:var(--bg)}
+.small{font-size:13px;color:var(--muted);margin:6px 2px 0}
+.btn{min-height:46px;padding:10px 16px;border-radius:var(--r-sm);border:1px solid var(--edge);background:var(--glass);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:8px;transition:transform .2s var(--spring)}
+.btn:active{transform:scale(.95)}
+.btn.pri{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.btn.danger{color:var(--danger)}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btns .grow{flex:1}
+.card{border:1px solid var(--edge);border-radius:18px;padding:12px 14px;margin-top:10px;background:var(--glass)}
+.card legend{font-weight:700;padding:0 6px}
+fieldset.card{margin:14px 0 0}
+.sw{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.sw button{width:36px;height:36px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:var(--c)}
+.sw button[aria-pressed="true"]{border-color:var(--fg);transform:scale(1.1)}
+.emo{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.emo button{width:42px;height:42px;border-radius:12px;border:1px solid var(--edge);background:var(--glass);font-size:22px;cursor:pointer}
+.chk{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}
+.chk input{width:22px;height:22px;accent-color:var(--accent)}
+.st{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--edge);font-size:15px}
+.st:last-child{border:none}
+.st b{font-weight:600}
+.ok{color:var(--ok)} .ko{color:var(--danger)} .mid{color:#f59e0b}
+.qr{background:#fff;border-radius:18px;padding:10px;max-width:300px;margin:12px auto 0}
+.qr svg{display:block;width:100%;height:auto}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:22px;letter-spacing:.12em;text-align:center;margin-top:10px}
+
+.toast{position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translate(-50%,40px);opacity:0;z-index:50;pointer-events:none;
+  padding:12px 18px;border-radius:16px;background:color-mix(in srgb,var(--bg) 70%,transparent);border:1px solid var(--edge);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:var(--shadow);transition:.35s var(--spring);max-width:90vw;text-align:center}
+.toast.show{transform:translate(-50%,0);opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+  .tile{transform:none!important}
+}
+body.calm .sky i{animation:none}
+body.calm .tile{animation:none}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<div class="grain" aria-hidden="true"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+  <symbol id="i-set" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7h-4M14 21h.01"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+</svg>
+
+<div class="wrap" id="app">
+  <header>
+    <div class="brand">
+      <h1>MaxiskApp</h1>
+      <p id="hello">Bonjour</p>
+    </div>
+    <button class="ibtn" id="bEdit" aria-pressed="false" aria-label="Modifier les tuiles" title="Modifier"><svg class="i"><use href="#i-edit"/></svg></button>
+    <button class="ibtn" id="bSet" aria-label="Réglages" title="Réglages"><svg class="i"><use href="#i-set"/></svg></button>
+  </header>
+
+  <section id="secFav">
+    <h2><svg class="i" style="width:16px;height:16px"><use href="#i-star"/></svg>Favoris</h2>
+    <div class="grid" id="favGrid"></div>
+    <p class="hint" id="favHint" hidden>Touche le crayon, puis l'étoile d'une appli pour l'épingler ici.</p>
+  </section>
+  <section>
+    <h2><svg class="i" style="width:16px;height:16px"><use href="#i-grid"/></svg><span id="allTitle">Les plus utilisées</span></h2>
+    <div class="grid" id="allGrid"></div>
+  </section>
+  <p class="hint" id="editHint" hidden>Mode modification : touche une tuile pour la régler. Glisse les favoris pour les ranger.</p>
+</div>
+
+<!-- Fenêtre : une tuile -->
+<dialog id="dTile"><form class="sheet" method="dialog" id="fTile" novalidate>
+  <div class="top"><h3 id="tTitle">Appli</h3><button class="ibtn" value="cancel" formnovalidate aria-label="Fermer"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <label class="f"><span>Nom</span><input class="in" name="name" required maxlength="24" autocomplete="off"></label>
+  <label class="f"><span>Icône : un émoji, ou l'adresse d'une image</span><input class="in" name="icon" maxlength="300" autocomplete="off"></label>
+  <div class="emo" id="emo"></div>
+  <label class="f"><span>Couleur</span></label><div class="sw" id="sw"></div>
+
+  <fieldset class="card"><legend>📱 Sur Android</legend>
+    <label class="f"><span>Ouvrir</span><select class="in" name="aMode">
+      <option value="app">Une appli installée</option><option value="url">Un lien web</option><option value="hide">Rien (masquer)</option></select></label>
+    <div data-show="aMode=app">
+      <label class="f"><span>Nom du paquet</span><input class="in" name="aPkg" placeholder="ex : io.homeassistant.companion.android" autocapitalize="off" spellcheck="false"></label>
+      <p class="small">Dans l'adresse Play Store de l'appli, c'est ce qui suit « id= ».</p>
+      <label class="f"><span>Lien direct (facultatif)</span><input class="in" name="aDeep" placeholder="ex : homeassistant://navigate/" autocapitalize="off" spellcheck="false"></label>
+      <p class="small">Si l'appli en a un, il l'ouvre plus sûrement. Sinon, Chrome peut passer par la fiche Play Store (bouton « Ouvrir »).</p>
+    </div>
+    <div data-show="aMode=url"><label class="f"><span>Adresse</span><input class="in" name="aUrl" type="url" placeholder="https://…" autocapitalize="off" spellcheck="false"></label></div>
+  </fieldset>
+
+  <fieldset class="card"><legend>💻 Sur PC</legend>
+    <label class="f"><span>Ouvrir</span><select class="in" name="pMode">
+      <option value="url">Un lien</option><option value="hide">Rien (masquer)</option></select></label>
+    <div data-show="pMode=url"><label class="f"><span>Adresse</span><input class="in" name="pUrl" placeholder="https://… ou un lien d'appli" autocapitalize="off" spellcheck="false"></label></div>
+  </fieldset>
+
+  <label class="chk" style="margin-top:12px"><input type="checkbox" name="hidden"><span>Masquer cette tuile</span></label>
+  <div class="btns">
+    <button class="btn danger" type="button" id="bDel">Supprimer</button>
+    <span class="grow"></span>
+    <button class="btn pri" value="ok" id="bSaveTile"><svg class="i"><use href="#i-check"/></svg>Enregistrer</button>
+  </div>
+</form></dialog>
+
+<!-- Fenêtre : réglages -->
+<dialog id="dSet"><div class="sheet">
+  <div class="top"><h3>Réglages</h3><button class="ibtn" data-close aria-label="Fermer"><svg class="i"><use href="#i-x"/></svg></button></div>
+
+  <label class="f"><span>Ton prénom (pour le bonjour)</span><input class="in" id="sName" maxlength="20" autocomplete="off"></label>
+
+  <h4><svg class="i"><use href="#i-key"/></svg>Jeton GitHub commun</h4>
+  <p class="small">Saisi une fois ici, il sert à Budget et à Jungle. Chaque appli garde sa propre phrase secrète.</p>
+  <label class="f"><span>Jeton (github_pat_…)</span><input class="in" id="sPat" type="password" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
+  <label class="chk"><input type="checkbox" id="sShow"><span>Afficher le jeton</span></label>
+  <div class="card" id="patState"></div>
+  <div class="btns"><button class="btn pri" id="bPat">Enregistrer et appliquer partout</button></div>
+
+  <h4><svg class="i"><use href="#i-qr"/></svg>Configurer un autre téléphone</h4>
+  <p class="small">Le QR contient le jeton et les phrases secrètes. Il est chiffré : le code s'affiche ici, à donner de vive voix.</p>
+  <label class="chk"><input type="checkbox" id="sTiles"><span>Inclure mes tuiles (elle pourra les ranger à sa façon)</span></label>
+  <div class="btns"><button class="btn" id="bQr"><svg class="i"><use href="#i-qr"/></svg>Afficher le QR code</button></div>
+  <div id="qrOut"></div>
+
+  <h4>✨ Effets</h4>
+  <label class="chk"><input type="checkbox" id="sTilt"><span>Inclinaison du téléphone (consomme un peu de batterie)</span></label>
+  <label class="chk"><input type="checkbox" id="sCalm"><span>Calmer les animations</span></label>
+  <label class="chk"><input type="checkbox" id="sTab"><span>Sur PC, ouvrir dans un nouvel onglet</span></label>
+  <label class="f"><span>Appareil</span><select class="in" id="sPlat"><option value="auto">Détection automatique</option><option value="android">Toujours Android</option><option value="pc">Toujours PC</option></select></label>
+
+  <h4><svg class="i"><use href="#i-box"/></svg>Sauvegarde des tuiles</h4>
+  <p class="small">Fichier sans jeton ni phrase secrète.</p>
+  <div class="btns">
+    <button class="btn" id="bExp">Exporter</button>
+    <label class="btn">Importer<input type="file" id="fImp" accept="application/json,.json" hidden></label>
+    <button class="btn" id="bUse">Remettre l'usage à zéro</button>
+  </div>
+  <p class="small" style="margin-top:18px">Version <span id="ver"></span></p>
+</div></dialog>
+
+<!-- Fenêtre : import par QR -->
+<dialog id="dIn"><form class="sheet" method="dialog" id="fIn">
+  <h3>Configurer ce téléphone</h3>
+  <p class="small">Entre le code affiché sur l'autre appareil.</p>
+  <label class="f"><span>Code</span><input class="in" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-family:ui-monospace,monospace;letter-spacing:.1em"></label>
+  <p class="small ko" id="inErr" hidden>Code incorrect.</p>
+  <div class="btns"><button class="btn" value="cancel" formnovalidate>Annuler</button><span class="grow"></span><button class="btn pri" value="ok" id="bIn">Valider</button></div>
+</form></dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="qrcode.js"></script>
+<script>
+"use strict";
+const VERSION = "1.0.0";
+
+/* ═════ Stockage ═════
+   Toutes les applis sont sur miamax6.github.io : même origine, donc même localStorage.
+   - maxisk.cfg   : tuiles + favoris + réglages (propre à cet appareil)
+   - maxisk.usage : compteur d'ouvertures (tri)
+   - maxisk.pat   : jeton GitHub commun
+   - cc.cfg / jg.cfg : config de synchro de Budget et de Jungle (on n'y change que le jeton,
+     plus compte/dépôt s'ils sont vides). Les applis restent utilisables seules. */
+const LS = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); return true; } catch(e){ return false; } },
+  json(k,f){ try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : f; } catch(e){ return f; } },
+  put(k,o){ return LS.set(k, JSON.stringify(o)); }
+};
+const K = { cfg:"maxisk.cfg", use:"maxisk.usage", pat:"maxisk.pat" };
+const APPS = [
+  { key:"cc.cfg", name:"Budget",  path:"budget/donnees.enc.json" },
+  { key:"jg.cfg", name:"Jungle",  path:"jungle/datas.json" }
+];
+const OWNER = "miamax6", DATA_REPO = "miamax6";
+const COLORS = ["#8b5cf6","#06b6d4","#22c55e","#f59e0b","#f43f5e","#3b82f6","#ec4899","#14b8a6","#64748b"];
+const EMOJIS = ["💶","🪴","🎲","🏠","🔊","💸","📷","🚣","📅","🛒","🎵","📺","🗺️","⚙️","💡","🔒"];
+const PAGES = "https://miamax6.github.io/";
+
+const DEFAULT_TILES = () => [
+  { id:"budget",  name:"Budget",  icon:PAGES+"mbauxdijsekta/icon-192.png", color:"#f43f5e",
+    android:{ mode:"url", url:PAGES+"mbauxdijsekta/" }, pc:{ mode:"url", url:PAGES+"mbauxdijsekta/" } },
+  { id:"jungle",  name:"Jungle",  icon:PAGES+"your-tiny-jungle/icons/icon-192.png", color:"#22c55e",
+    android:{ mode:"url", url:PAGES+"your-tiny-jungle/" }, pc:{ mode:"url", url:PAGES+"your-tiny-jungle/" } },
+  { id:"yam",     name:"Yam's",   icon:"🎲", color:"#f59e0b",
+    android:{ mode:"url", url:PAGES+"yam-iamax/" }, pc:{ mode:"url", url:PAGES+"yam-iamax/" } },
+  { id:"ha",      name:"Home Assistant", icon:"🏠", color:"#06b6d4",
+    android:{ mode:"app", pkg:"io.homeassistant.companion.android", deep:"homeassistant://navigate/" }, pc:{ mode:"url", url:"" } },
+  { id:"musiccast", name:"MusicCast", icon:"🔊", color:"#3b82f6",
+    android:{ mode:"app", pkg:"com.yamaha.av.musiccastcontroller", deep:"" }, pc:{ mode:"url", url:"" } },
+  { id:"tricount", name:"Tricount", icon:"💸", color:"#14b8a6",
+    android:{ mode:"app", pkg:"com.tribab.tricount.android", deep:"" }, pc:{ mode:"url", url:"https://tricount.com/" } }
+];
+
+let cfg = LS.json(K.cfg, null);
+if (!cfg || !Array.isArray(cfg.tiles)) cfg = { v:1, tiles:DEFAULT_TILES(), favs:["budget","ha"], prefs:{} };
+cfg.prefs = Object.assign({ tilt:true, calm:false, newTab:true, plat:"auto", name:"" }, cfg.prefs || {});
+cfg.favs = (cfg.favs || []).filter(id => cfg.tiles.some(t => t.id === id));
+let usage = LS.json(K.use, {});
+const save = () => LS.put(K.cfg, cfg);
+
+/* ═════ Outils ═════ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const uid = () => Math.random().toString(36).slice(2, 9);
+const isAndroid = () => cfg.prefs.plat === "android" || (cfg.prefs.plat === "auto" && /Android/i.test(navigator.userAgent));
+const isImg = s => /^(https?:|data:image|\.{0,2}\/)/i.test(String(s || "").trim());
+let toastT;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2800); }
+
+/* Lien Android : intent:// (Chrome) avec repli vers la fiche Play Store.
+   Avec un lien direct (schéma propre à l'appli), on le passe dans l'intent : plus fiable. */
+function intentFor(a){
+  const pkg = (a.pkg || "").trim(); if (!pkg) return "";
+  const fb = encodeURIComponent("https://play.google.com/store/apps/details?id=" + pkg);
+  const deep = (a.deep || "").trim(), m = deep.match(/^([a-z][a-z0-9+.-]*):\/\/(.*)$/i);
+  if (m && !/^https?$/i.test(m[1])) return `intent://${m[2]}#Intent;scheme=${m[1]};package=${pkg};S.browser_fallback_url=${fb};end`;
+  return `intent://#Intent;package=${pkg};S.browser_fallback_url=${fb};end`;
+}
+/* Ce qu'ouvre une tuile sur cet appareil : { href } / { todo:true } / { off:true } */
+function target(t){
+  if (isAndroid()){
+    const a = t.android || {};
+    if (a.mode === "hide") return { off:true };
+    if (a.mode === "app") return a.pkg ? { href:intentFor(a) } : { todo:true };
+    return a.url ? { href:a.url } : { todo:true };
+  }
+  const p = t.pc || {};
+  if (p.mode === "hide") return { off:true };
+  return p.url ? { href:p.url, blank:cfg.prefs.newTab } : { todo:true };
+}
+
+/* ═════ Rendu ═════ */
+let editing = false;
+function iconHtml(t){
+  const ic = (t.icon || "").trim();
+  if (isImg(ic)) return `<span class="ico" style="--c:${esc(t.color)}"><img src="${esc(ic)}" alt="" loading="lazy" onerror="this.replaceWith(document.createTextNode('${esc((t.name||'?')[0])}'))"></span>`;
+  return `<span class="ico" style="--c:${esc(t.color)}" aria-hidden="true">${esc(ic || (t.name || "?")[0])}</span>`;
+}
+function tileHtml(t, i, fav){
+  const tg = target(t), cls = ["tile"];
+  if (tg.todo) cls.push("todo");
+  if (tg.off || t.hidden) cls.push("off");
+  const isFav = cfg.favs.includes(t.id);
+  const href = !editing && tg.href ? ` href="${esc(tg.href)}"${tg.blank ? ' target="_blank" rel="noopener"' : ""}` : "";
+  const tag = tg.todo ? `<span class="tag">à régler</span>` : (editing && (tg.off || t.hidden) ? `<span class="tag">masquée</span>` : "");
+  return `<a class="${cls.join(" ")}" data-id="${esc(t.id)}"${fav ? " data-fav" : ""}${href} style="--i:${i}" role="${href ? "link" : "button"}" tabindex="0" aria-label="${esc(t.name)}${tg.todo ? " (à régler)" : ""}">
+    ${iconHtml(t)}<span class="name">${esc(t.name)}</span>${tag}
+    <span class="badge${isFav ? " on" : ""}" data-star role="button" aria-label="${isFav ? "Retirer des favoris" : "Ajouter aux favoris"}"><svg class="i" style="width:18px;height:18px"><use href="#i-star"/></svg></span></a>`;
+}
+function visible(t){ if (editing) return true; const tg = target(t); return !(tg.off || t.hidden); }
+function render(){
+  document.body.classList.toggle("editing", editing);
+  document.body.classList.toggle("calm", !!cfg.prefs.calm);
+  const byId = Object.fromEntries(cfg.tiles.map(t => [t.id, t]));
+  const favs = cfg.favs.map(id => byId[id]).filter(t => t && visible(t));
+  const rest = cfg.tiles.filter(t => !cfg.favs.includes(t.id) && visible(t))
+    .sort((a, b) => (usage[b.id]?.n || 0) - (usage[a.id]?.n || 0) || (usage[b.id]?.at || 0) - (usage[a.id]?.at || 0) || a.name.localeCompare(b.name, "fr"));
+  $("#favGrid").innerHTML = favs.map((t, i) => tileHtml(t, i, true)).join("");
+  $("#allGrid").innerHTML = rest.map((t, i) => tileHtml(t, i + favs.length, false)).join("")
+    + (editing ? `<button class="tile add" id="bAdd" style="--i:${rest.length + favs.length}"><span class="ico"><svg class="i"><use href="#i-plus"/></svg></span><span class="name">Ajouter</span></button>` : "");
+  $("#favHint").hidden = favs.length > 0;
+  $("#allTitle").textContent = Object.keys(usage).length ? "Les plus utilisées" : "Toutes les applis";
+  $("#editHint").hidden = !editing;
+  $("#bEdit").setAttribute("aria-pressed", editing);
+  const h = new Date().getHours(), n = (cfg.prefs.name || "").trim();
+  $("#hello").textContent = (h >= 18 || h < 5 ? "Bonsoir" : "Bonjour") + (n ? " " + n : "") + (isAndroid() ? "" : " · PC");
+}
+
+/* ═════ Interactions tuiles ═════ */
+function countUse(id){ const u = usage[id] || { n:0, at:0 }; u.n++; u.at = Date.now(); usage[id] = u; LS.put(K.use, usage); }
+function toggleFav(id){
+  const i = cfg.favs.indexOf(id);
+  if (i >= 0) cfg.favs.splice(i, 1); else cfg.favs.push(id);
+  save(); render();
+}
+let longT = null, longFired = false, dragged = false;
+document.addEventListener("pointerdown", e => {
+  const t = e.target.closest(".tile"); if (!t || t.classList.contains("add")) return;
+  t.classList.add("press"); longFired = false;
+  if (!editing){ clearTimeout(longT); longT = setTimeout(() => { longFired = true; t.classList.remove("press"); if (navigator.vibrate) navigator.vibrate(12); openTile(t.dataset.id); }, 550); }
+});
+const unpress = () => { clearTimeout(longT); document.querySelectorAll(".tile.press").forEach(x => x.classList.remove("press")); };
+["pointerup","pointercancel","pointerleave"].forEach(ev => document.addEventListener(ev, unpress, true));
+document.addEventListener("contextmenu", e => { if (e.target.closest(".tile")) e.preventDefault(); });
+document.addEventListener("click", e => {
+  if (e.target.closest("#bAdd")){ openTile(null); return; }
+  const t = e.target.closest(".tile"); if (!t) return;
+  const id = t.dataset.id;
+  if (longFired || dragged){ e.preventDefault(); longFired = dragged = false; return; }
+  if (e.target.closest("[data-star]")){ e.preventDefault(); toggleFav(id); return; }
+  if (editing){ e.preventDefault(); openTile(id); return; }
+  const tile = cfg.tiles.find(x => x.id === id), tg = target(tile);
+  if (tg.todo){ e.preventDefault(); openTile(id); toast("Indique ce que cette tuile doit ouvrir sur cet appareil"); return; }
+  countUse(id);                               // le lien <a> fait le reste (geste utilisateur requis pour intent://)
+  if (tg.blank) setTimeout(render, 300);
+});
+document.addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches?.(".tile:not([href])")){ e.preventDefault(); e.target.click(); }
+});
+
+/* Reflet + relief au survol (souris) */
+document.addEventListener("pointermove", e => {
+  if (e.pointerType !== "mouse" || cfg.prefs.calm) return;
+  const t = e.target.closest(".tile"); if (!t) return;
+  const r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  t.style.setProperty("--ry", ((x - .5) * 16).toFixed(1) + "deg");
+  t.style.setProperty("--rx", ((.5 - y) * 16).toFixed(1) + "deg");
+  t.style.setProperty("--mx", (x * 100).toFixed(0) + "%");
+  t.style.setProperty("--my", (y * 100).toFixed(0) + "%");
+}, { passive:true });
+document.addEventListener("pointerout", e => {
+  const t = e.target.closest?.(".tile"); if (!t || t.contains(e.relatedTarget)) return;
+  ["--rx","--ry","--mx","--my"].forEach(p => t.style.removeProperty(p));
+});
+
+/* Inclinaison du téléphone : une seule variable globale, mise à jour au rythme de l'écran */
+const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+let tiltOn = false, tiltRaf = 0, tg = { x:0, y:0 }, cur = { x:0, y:0 }, base = null;
+function onOrient(e){
+  if (e.beta == null || e.gamma == null) return;
+  if (!base) base = { b:e.beta, g:e.gamma };          // position de départ = neutre
+  tg.x = Math.max(-1, Math.min(1, (e.gamma - base.g) / 25));
+  tg.y = Math.max(-1, Math.min(1, (e.beta - base.b) / 25));
+  if (!tiltRaf) tiltRaf = requestAnimationFrame(stepTilt);
+}
+function stepTilt(){
+  cur.x += (tg.x - cur.x) * .15; cur.y += (tg.y - cur.y) * .15;
+  const root = document.documentElement.style;
+  root.setProperty("--gx", (cur.x * 9).toFixed(2));
+  root.setProperty("--gy", (-cur.y * 9).toFixed(2));
+  document.querySelectorAll(".tile").forEach(t => { if (!t.style.getPropertyValue("--mx") || t.dataset.tilt){ t.dataset.tilt = 1; t.style.setProperty("--mx", (50 + cur.x * 45).toFixed(0) + "%"); t.style.setProperty("--my", (25 + cur.y * 40).toFixed(0) + "%"); } });
+  tiltRaf = (Math.abs(tg.x - cur.x) + Math.abs(tg.y - cur.y) > .002) ? requestAnimationFrame(stepTilt) : 0;
+}
+function setTilt(){
+  const want = cfg.prefs.tilt && !cfg.prefs.calm && !reduced.matches && isAndroid() && !document.hidden && "DeviceOrientationEvent" in window;
+  if (want === tiltOn) return;
+  tiltOn = want; base = null;
+  if (want) addEventListener("deviceorientation", onOrient, { passive:true });
+  else { removeEventListener("deviceorientation", onOrient); document.documentElement.style.setProperty("--gx", 0); document.documentElement.style.setProperty("--gy", 0); }
+}
+document.addEventListener("visibilitychange", () => { setTilt(); if (!document.hidden){ base = null; render(); } });
+reduced.addEventListener?.("change", setTilt);
+
+/* Glisser-déposer des favoris (mode modification) */
+(function(){
+  let el = null, sx = 0, sy = 0, moved = false;
+  const grid = $("#favGrid");
+  grid.addEventListener("pointerdown", e => {
+    if (!editing || e.target.closest("[data-star]")) return;
+    const t = e.target.closest(".tile"); if (!t) return;
+    el = t; sx = e.clientX; sy = e.clientY; moved = false;
+    t.setPointerCapture(e.pointerId);
+  });
+  grid.addEventListener("pointermove", e => {
+    if (!el) return;
+    if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) < 8) return;
+    if (!moved){ moved = true; el.classList.add("dragging"); el.classList.remove("press"); }
+    el.style.pointerEvents = "none";
+    const over = document.elementFromPoint(e.clientX, e.clientY)?.closest("#favGrid .tile");
+    el.style.pointerEvents = "";
+    if (!over || over === el) return;
+    const tiles = [...grid.children], before = new Map(tiles.map(n => [n, n.getBoundingClientRect()]));
+    const a = tiles.indexOf(el), b = tiles.indexOf(over);
+    grid.insertBefore(el, a < b ? over.nextSibling : over);
+    tiles.forEach(n => {                                   // animation FLIP
+      if (n === el) return;
+      const o = before.get(n), r = n.getBoundingClientRect(), dx = o.left - r.left, dy = o.top - r.top;
+      if (dx || dy) n.animate([{ translate:`${dx}px ${dy}px` }, { translate:"0 0" }], { duration:260, easing:"cubic-bezier(.22,1,.36,1)" });
+    });
+  });
+  const end = () => {
+    if (!el) return;
+    if (moved){
+      cfg.favs = [...grid.children].map(n => n.dataset.id).filter(Boolean)
+        .concat(cfg.favs.filter(id => !grid.querySelector(`[data-id="${CSS.escape(id)}"]`)));
+      save(); dragged = true; setTimeout(() => { dragged = false; }, 50);
+    }
+    el.classList.remove("dragging"); el = null;
+  };
+  grid.addEventListener("pointerup", end); grid.addEventListener("pointercancel", end);
+})();
+
+/* ═════ Éditeur de tuile ═════ */
+const dTile = $("#dTile"), fT = $("#fTile");
+let editId = null, editColor = COLORS[0];
+$("#emo").innerHTML = EMOJIS.map(e => `<button type="button" data-e="${e}">${e}</button>`).join("");
+$("#emo").addEventListener("click", e => { const b = e.target.closest("[data-e]"); if (b) fT.icon.value = b.dataset.e; });
+function paintSw(){ $("#sw").innerHTML = COLORS.map(c => `<button type="button" style="--c:${c}" data-c="${c}" aria-label="Couleur ${c}" aria-pressed="${c === editColor}"></button>`).join(""); }
+$("#sw").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (b){ editColor = b.dataset.c; paintSw(); } });
+function syncShow(){ fT.querySelectorAll("[data-show]").forEach(d => { const [k, v] = d.dataset.show.split("="); d.hidden = fT[k].value !== v; }); }
+fT.aMode.addEventListener("change", syncShow); fT.pMode.addEventListener("change", syncShow);
+function openTile(id){
+  const t = id ? cfg.tiles.find(x => x.id === id) : { name:"", icon:"", color:COLORS[(cfg.tiles.length) % COLORS.length], android:{ mode:"app" }, pc:{ mode:"url" } };
+  if (!t) return;
+  editId = id; editColor = t.color || COLORS[0];
+  $("#tTitle").textContent = id ? t.name : "Nouvelle tuile";
+  fT.name.value = t.name || ""; fT.icon.value = t.icon || "";
+  fT.aMode.value = t.android?.mode || "url"; fT.aPkg.value = t.android?.pkg || ""; fT.aDeep.value = t.android?.deep || ""; fT.aUrl.value = t.android?.url || "";
+  fT.pMode.value = t.pc?.mode || "url"; fT.pUrl.value = t.pc?.url || "";
+  fT.hidden.checked = !!t.hidden;
+  $("#bDel").hidden = !id;
+  paintSw(); syncShow(); dTile.showModal();
+}
+fT.addEventListener("submit", e => { if (e.submitter?.value === "ok" && !fT.name.value.trim()){ e.preventDefault(); toast("Il manque le nom"); fT.name.focus(); } });
+dTile.addEventListener("close", () => {
+  if (dTile.returnValue !== "ok") return;
+  const name = fT.name.value.trim(); if (!name){ toast("Il manque le nom"); return; }
+  const t = editId ? cfg.tiles.find(x => x.id === editId) : { id:uid() };
+  Object.assign(t, {
+    name, icon:fT.icon.value.trim(), color:editColor, hidden:fT.hidden.checked,
+    android:{ mode:fT.aMode.value, pkg:fT.aPkg.value.trim(), deep:fT.aDeep.value.trim(), url:fT.aUrl.value.trim() },
+    pc:{ mode:fT.pMode.value, url:fT.pUrl.value.trim() }
+  });
+  if (!editId) cfg.tiles.push(t);
+  save(); render(); toast("Enregistré");
+});
+$("#bDel").addEventListener("click", () => {
+  const t = cfg.tiles.find(x => x.id === editId); if (!t) return;
+  if (!confirm(`Supprimer « ${t.name} » ?`)) return;
+  cfg.tiles = cfg.tiles.filter(x => x.id !== editId); cfg.favs = cfg.favs.filter(x => x !== editId);
+  delete usage[editId]; LS.put(K.use, usage);
+  save(); dTile.close("cancel"); render(); toast("Tuile supprimée");
+});
+
+/* ═════ Jeton commun ═════ */
+const appCfg = a => LS.json(a.key, null);
+function patState(){
+  const pat = LS.get(K.pat) || "";
+  $("#patState").innerHTML = APPS.map(a => {
+    const c = appCfg(a), tok = c?.token || "";
+    const s = !tok ? `<b class="ko">aucun jeton</b>` : (pat && tok === pat ? `<b class="ok">✓ identique</b>` : `<b class="mid">différent</b>`);
+    const pass = c?.pass ? "" : ` · <span class="mid">phrase à saisir dans l'appli</span>`;
+    return `<div class="st"><span>${a.name}</span><span>${s}${tok ? pass : ""}</span></div>`;
+  }).join("");
+}
+function applyPat(pat){
+  APPS.forEach(a => {
+    const c = appCfg(a) || {};
+    c.token = pat;
+    if (!c.owner) c.owner = OWNER;
+    if (!c.repo) c.repo = DATA_REPO;
+    if (!c.path) c.path = a.path;
+    if (!c.branch) c.branch = "main";
+    LS.put(a.key, c);
+  });
+  LS.set(K.pat, pat);
+}
+/* Si une appli a déjà un jeton et pas MaxiskApp : on le récupère */
+function adoptPat(){
+  if (LS.get(K.pat)) return;
+  for (const a of APPS){ const tok = appCfg(a)?.token; if (tok){ LS.set(K.pat, tok); toast(`Jeton récupéré depuis ${a.name}`); return; } }
+}
+
+/* ═════ Partage par QR (chiffré AES-GCM, clé PBKDF2 tirée du code) ═════ */
+const b64u = u8 => { let s = ""; u8.forEach(x => { s += String.fromCharCode(x); }); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+const normCode = s => String(s || "").replace(/[\s-]+/g, "").toUpperCase();
+function newCode(){ const A = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint8Array(8)); return Array.from(r, x => A[x % A.length]).join(""); }
+async function keyFrom(code, salt){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name:"PBKDF2", salt, iterations:200000, hash:"SHA-256" }, base, { name:"AES-GCM", length:256 }, false, ["encrypt","decrypt"]);
+}
+async function enc(text, code){
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name:"AES-GCM", iv }, await keyFrom(code, salt), new TextEncoder().encode(text)));
+  const out = new Uint8Array(28 + ct.length); out.set(salt, 0); out.set(iv, 16); out.set(ct, 28); return b64u(out);
+}
+async function dec(payload, code){
+  const b = unb64u(payload);
+  return new TextDecoder().decode(await crypto.subtle.decrypt({ name:"AES-GCM", iv:b.slice(16, 28) }, await keyFrom(code, b.slice(0, 16)), b.slice(28)));
+}
+function qrSvg(text){
+  const qr = qrcode(0, "L"); qr.addData(text); qr.make();
+  const n = qr.getModuleCount(), m = 4; let d = "";
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c + m} ${r + m}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${n + 2 * m} ${n + 2 * m}" shape-rendering="crispEdges" role="img" aria-label="QR code de configuration"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
+const slim = t => { const o = { i:t.id, n:t.name, c:t.color, a:t.android, p:t.pc }; if (t.icon) o.e = t.icon; if (t.hidden) o.h = 1; return o; };
+async function showQr(){
+  const pat = LS.get(K.pat);
+  if (!pat){ toast("Enregistre d'abord le jeton"); return; }
+  const data = { v:1, t:pat, apps:{} };
+  APPS.forEach(a => { const c = appCfg(a); if (c) data.apps[a.key] = { o:c.owner, r:c.repo, p:c.path, b:c.branch, k:c.pass || "" }; });
+  if ($("#sTiles").checked) data.tiles = cfg.tiles.map(slim);
+  const code = newCode();
+  const url = location.origin + location.pathname + "#partage=" + await enc(JSON.stringify(data), code);
+  let svg;
+  try { svg = qrSvg(url); } catch(e){ toast("Trop de tuiles pour un QR : décoche « Inclure mes tuiles »"); return; }
+  $("#qrOut").innerHTML = `<div class="qr">${svg}</div><div class="code">${(code.match(/.{1,4}/g) || []).join("-")}</div><p class="small" style="text-align:center">Scanne avec l'appareil photo de l'autre téléphone, puis tape ce code.</p>`;
+}
+let inPayload = null;
+function checkHash(){
+  const m = location.hash.match(/^#partage=(.+)$/); if (!m) return;
+  inPayload = m[1];
+  try { history.replaceState(null, "", location.pathname + location.search); } catch(e){}
+  $("#inErr").hidden = true; $("#fIn").code.value = ""; $("#dIn").showModal();
+}
+$("#fIn").addEventListener("submit", async e => {
+  if (e.submitter?.value !== "ok") return;
+  e.preventDefault();
+  let o;
+  try { o = JSON.parse(await dec(inPayload, normCode($("#fIn").code.value))); if (!o.t) throw 0; }
+  catch(err){ $("#inErr").hidden = false; return; }
+  APPS.forEach(a => {
+    const s = o.apps?.[a.key]; if (!s) return;
+    const c = appCfg(a) || {};
+    Object.assign(c, { owner:s.o || OWNER, repo:s.r || DATA_REPO, path:s.p || a.path, branch:s.b || "main", token:o.t });
+    if (s.k) c.pass = s.k;
+    LS.put(a.key, c);
+  });
+  LS.set(K.pat, o.t);
+  if (Array.isArray(o.tiles) && o.tiles.length){
+    cfg.tiles = o.tiles.map(x => ({ id:x.i, name:x.n, icon:x.e || "", color:x.c, android:x.a || { mode:"hide" }, pc:x.p || { mode:"hide" }, hidden:!!x.h }));
+    cfg.favs = cfg.favs.filter(id => cfg.tiles.some(t => t.id === id));
+    save();
+  }
+  $("#dIn").close(); render(); toast("Ce téléphone est configuré ✓");
+});
+
+/* ═════ Réglages ═════ */
+const dSet = $("#dSet");
+function openSet(){
+  $("#sName").value = cfg.prefs.name || "";
+  $("#sPat").value = LS.get(K.pat) || ""; $("#sPat").type = "password"; $("#sShow").checked = false;
+  $("#sTilt").checked = !!cfg.prefs.tilt; $("#sCalm").checked = !!cfg.prefs.calm; $("#sTab").checked = !!cfg.prefs.newTab;
+  $("#sPlat").value = cfg.prefs.plat; $("#qrOut").innerHTML = ""; $("#ver").textContent = VERSION;
+  patState(); dSet.showModal();
+}
+dSet.addEventListener("click", e => { if (e.target.closest("[data-close]")) dSet.close(); });
+$("#sShow").addEventListener("change", e => { $("#sPat").type = e.target.checked ? "text" : "password"; });
+$("#sName").addEventListener("input", e => { cfg.prefs.name = e.target.value; save(); render(); });
+[["#sTilt","tilt"],["#sCalm","calm"],["#sTab","newTab"]].forEach(([s, k]) => $(s).addEventListener("change", e => { cfg.prefs[k] = e.target.checked; save(); setTilt(); render(); }));
+$("#sPlat").addEventListener("change", e => { cfg.prefs.plat = e.target.value; save(); setTilt(); render(); });
+$("#bPat").addEventListener("click", () => {
+  const pat = $("#sPat").value.trim();
+  if (!/^(github_pat_|ghp_)[A-Za-z0-9_]{20,}$/.test(pat)){ toast("Ce n'est pas un jeton GitHub valide"); return; }
+  applyPat(pat); patState(); toast("Jeton appliqué à Budget et Jungle");
+});
+$("#bQr").addEventListener("click", showQr);
+$("#bExp").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify({ maxiskapp:1, tiles:cfg.tiles, favs:cfg.favs }, null, 2)], { type:"application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "maxiskapp-tuiles.json"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+$("#fImp").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const o = JSON.parse(await f.text()); if (!Array.isArray(o.tiles)) throw 0;
+    cfg.tiles = o.tiles.filter(t => t && t.id && t.name); cfg.favs = (o.favs || []).filter(id => cfg.tiles.some(t => t.id === id));
+    save(); render(); toast("Tuiles importées");
+  } catch(err){ toast("Fichier non reconnu"); }
+  e.target.value = "";
+});
+$("#bUse").addEventListener("click", () => { if (confirm("Remettre le compteur d'usage à zéro ?")){ usage = {}; LS.put(K.use, usage); render(); toast("Usage remis à zéro"); } });
+
+/* ═════ Démarrage ═════ */
+$("#bEdit").addEventListener("click", () => { editing = !editing; render(); });
+$("#bSet").addEventListener("click", openSet);
+addEventListener("hashchange", checkHash);
+adoptPat(); render(); setTilt(); checkHash();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
