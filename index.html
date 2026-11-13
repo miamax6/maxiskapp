@@ -337,6 +337,8 @@ let cfg = LS.json(K.cfg, null);
 if (!cfg || !Array.isArray(cfg.tiles)) cfg = { v:1, tiles:DEFAULT_TILES(), favs:["budget","ha"], prefs:{} };
 cfg.prefs = Object.assign({ tilt:true, calm:false, newTab:true, plat:"auto", name:"" }, cfg.prefs || {});
 cfg.favs = (cfg.favs || []).filter(id => cfg.tiles.some(t => t.id === id));
+/* Migration 1.0.1 : lien direct Tricount */
+{ const tc = cfg.tiles.find(t => t.id === "tricount"); if (tc && tc.android && tc.android.mode === "app" && !tc.android.deep){ tc.android.deep = "https://tricount.com/link/tricounts"; LS.put(K.cfg, cfg); } }
 let usage = LS.json(K.use, {});
 const save = () => LS.put(K.cfg, cfg);
 
