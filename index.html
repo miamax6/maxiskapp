@@ -276,7 +276,7 @@ body.calm .card{transform:none!important}
 <!-- Fenêtre : réglages -->
 <dialog id="dSet" aria-labelledby="sTitle"><div class="sheet">
   <div class="top"><h3 id="sTitle">Réglages</h3><button class="ibtn" data-close aria-label="Fermer"><svg class="i"><use href="#x"/></svg></button></div>
-  <label class="f"><span>Ton prénom (pour le bonjour)</span><input class="in" id="sName" maxlength="20" autocomplete="given-name"></label>
+<input type="hidden" id="sName">
 
   <h4><svg class="i" aria-hidden="true"><use href="#key-round"/></svg>Jeton GitHub commun</h4>
   <p class="small">Saisi une fois ici, il sert à Budget et à Jungle. Chaque appli garde sa propre phrase secrète.</p>
@@ -475,7 +475,7 @@ function render(){
   const d = new Date(), h = d.getHours(), n = (cfg.prefs.name || "").trim();
   const ds = d.toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" });
   $("#today").textContent = ds.charAt(0).toUpperCase() + ds.slice(1) + (isAndroid() ? "" : " · PC");
-  $("#hello").textContent = (h >= 18 || h < 5 ? "Bonsoir" : "Bonjour") + (n ? " " + n : "");
+  $("#hello").textContent = "MaxiskApp";
 }
 
 /* ═════ Interactions tuiles ═════ */
