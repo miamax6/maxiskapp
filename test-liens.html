@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test des liens Android</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;padding:18px;background:#111;color:#eee}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:16px;margin:26px 0 8px}
+p{color:#aaa;font-size:14px;margin:0 0 10px}
+a{display:flex;gap:12px;align-items:center;padding:14px;margin:8px 0;border-radius:14px;background:#222;color:#fff;text-decoration:none;font-size:16px;border:1px solid #333}
+a b{background:#7c3aed;border-radius:8px;min-width:34px;text-align:center;padding:4px 0}
+small{display:block;color:#888;font-size:12px}
+</style></head><body>
+<h1>Test des liens</h1>
+<p>Touche chaque bouton, puis reviens ici. Note les numéros qui ouvrent <b>directement</b> l'appli.</p>
+
+<h2>💸 Tricount</h2>
+<a href="intent://tricount.com/link/tricounts#Intent;scheme=https;package=com.tribab.tricount.android;end"><b>T1</b><span>Lien tricount.com/link forcé vers l'appli<small>intent https + paquet</small></span></a>
+<a href="https://tricount.com/link/tricounts"><b>T2</b><span>Lien tricount.com/link simple<small>Chrome peut proposer l'appli</small></span></a>
+<a href="intent://launch?id=com.tribab.tricount.android#Intent;scheme=market;package=com.android.vending;end"><b>T3</b><span>Via Play Store « launch »<small>market://launch</small></span></a>
+
+<h2>🔊 MusicCast</h2>
+<a href="intent://launch?id=com.yamaha.av.musiccastcontroller#Intent;scheme=market;package=com.android.vending;end"><b>M1</b><span>Via Play Store « launch »<small>market://launch</small></span></a>
+<a href="intent://play.google.com/store/apps/details?id=com.yamaha.av.musiccastcontroller&amp;launch=true#Intent;scheme=https;package=com.android.vending;end"><b>M2</b><span>Play Store avec launch=true<small>https + paquet Play Store</small></span></a>
+<a href="intent://#Intent;scheme=musiccast;package=com.yamaha.av.musiccastcontroller;end"><b>M3</b><span>Schéma « musiccast:// » (deviné)<small>non documenté</small></span></a>
+<a href="intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.yamaha.av.musiccastcontroller;end"><b>M4</b><span>Lancement classique<small>témoin : devrait échouer</small></span></a>
+</body></html>

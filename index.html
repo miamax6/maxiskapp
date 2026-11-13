@@ -293,7 +293,7 @@ body.calm .tile{animation:none}
 <script src="qrcode.js"></script>
 <script>
 "use strict";
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 /* ═════ Stockage ═════
    Toutes les applis sont sur miamax6.github.io : même origine, donc même localStorage.
@@ -330,7 +330,7 @@ const DEFAULT_TILES = () => [
   { id:"musiccast", name:"MusicCast", icon:"🔊", color:"#3b82f6",
     android:{ mode:"app", pkg:"com.yamaha.av.musiccastcontroller", deep:"" }, pc:{ mode:"url", url:"" } },
   { id:"tricount", name:"Tricount", icon:"💸", color:"#14b8a6",
-    android:{ mode:"app", pkg:"com.tribab.tricount.android", deep:"" }, pc:{ mode:"url", url:"https://tricount.com/" } }
+    android:{ mode:"app", pkg:"com.tribab.tricount.android", deep:"https://tricount.com/link/tricounts" }, pc:{ mode:"url", url:"https://tricount.com/" } }
 ];
 
 let cfg = LS.json(K.cfg, null);
@@ -355,7 +355,7 @@ function intentFor(a){
   const pkg = (a.pkg || "").trim(); if (!pkg) return "";
   const fb = encodeURIComponent("https://play.google.com/store/apps/details?id=" + pkg);
   const deep = (a.deep || "").trim(), m = deep.match(/^([a-z][a-z0-9+.-]*):\/\/(.*)$/i);
-  if (m && !/^https?$/i.test(m[1])) return `intent://${m[2]}#Intent;scheme=${m[1]};package=${pkg};S.browser_fallback_url=${fb};end`;
+  if (m) return `intent://${m[2]}#Intent;scheme=${m[1]};package=${pkg};S.browser_fallback_url=${fb};end`;
   return `intent://#Intent;package=${pkg};S.browser_fallback_url=${fb};end`;
 }
 /* Ce qu'ouvre une tuile sur cet appareil : { href } / { todo:true } / { off:true } */
