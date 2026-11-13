@@ -1,5 +1,5 @@
 /* Réseau d'abord (toujours revalidé : le cache HTTP de GitHub Pages dure 10 min) ; copie locale si hors ligne. */
-const C = 'maxisk-v2';
+const C = 'maxisk-v3';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('maxisk-') && k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {

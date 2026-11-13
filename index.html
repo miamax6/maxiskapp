@@ -67,68 +67,92 @@ section h2{margin:0 0 12px 2px;font:600 16px/1.3 var(--f-head);color:var(--muted
 .hint{color:var(--muted);font-size:14px;margin:8px 2px 0}
 
 /* ═════ Grille bento ═════ */
-.bento{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(84px,calc((100vw - 32px - 36px) / 4));grid-auto-flow:dense;gap:var(--gap);perspective:1000px}
+.bento{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(84px,calc((100vw - 32px - 36px) / 4));grid-auto-flow:dense;gap:var(--gap)}
 @media (min-width:600px){.bento{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:104px;--gap:16px}}
 @media (min-width:1000px){.bento{grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows:116px}}
 .span-big{grid-column:span 2;grid-row:span 2}
 .span-wide{grid-column:span 2}
 
-.tile{position:relative;display:flex;min-width:0;border-radius:var(--r-lg);text-decoration:none;color:inherit;cursor:pointer;overflow:hidden;
-  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;outline-offset:3px;
-  --rx:0deg; --ry:0deg; --s:1; --mx:30%; --my:0%;
-  transform:rotateX(calc(var(--rx) + var(--gy) * 1deg)) rotateY(calc(var(--ry) + var(--gx) * 1deg)) scale(var(--s));
-  transition:transform var(--t-hover) var(--out), filter var(--t-press), box-shadow var(--t-hover);
-  animation:enter var(--t-enter) var(--spring) both; animation-delay:calc(var(--i,0) * 60ms)}
-@keyframes enter{from{opacity:0;transform:translateY(16px) scale(.92)}}
-@media (hover:hover){.tile:hover{--s:1.02}}
-.tile.press{--s:.97;filter:brightness(.94);transition-duration:var(--t-press)}
+/* ═════ Tuile 3D ═════
+   .tile = case de la grille (perspective, entrée) · .card = objet qui pivote (preserve-3d)
+   Calques en profondeur : .plate (fond) → .lg (logo, très en avant) → .tx (texte, en avant).
+   Pas d'overflow:hidden sur .card : il aplatirait la 3D. */
+.tile{position:relative;display:block;min-width:0;text-decoration:none;color:inherit;cursor:pointer;
+  perspective:700px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;border-radius:var(--r-lg);
+  animation:enter 520ms var(--spring) both;animation-delay:calc(var(--i,0) * 70ms)}
+@keyframes enter{from{opacity:0;transform:translateY(28px) scale(.85) rotateX(25deg)}}
+.card{position:absolute;inset:0;transform-style:preserve-3d;border-radius:inherit;
+  --rx:0; --ry:0; --z:0px; --s:1; --mx:50%; --my:15%;
+  transform:translateZ(var(--z)) rotateX(calc((var(--rx) + var(--gy)) * 1deg)) rotateY(calc((var(--ry) + var(--gx)) * 1deg)) scale(var(--s));
+  transition:transform 650ms var(--spring)}
+.tile.touching .card{transition:transform 120ms var(--out)}
+.plate{position:absolute;inset:0;border-radius:inherit;overflow:hidden;
+  background:linear-gradient(150deg,color-mix(in srgb,var(--c) 82%,white) 0%,var(--c) 45%,color-mix(in srgb,var(--c) 70%,black) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.18);
+  transform:translateZ(0)}
+/* ombre portée qui glisse à l'opposé de l'inclinaison */
+.card::before{content:"";position:absolute;inset:8% 6% -4%;border-radius:inherit;background:var(--c);filter:blur(18px);opacity:.55;
+  transform:translateZ(-40px) translate(calc((var(--ry) + var(--gx)) * -1.4px), calc((var(--rx) + var(--gy)) * 1.4px + 10px))}
+/* reflet qui suit le doigt / l'inclinaison */
+.glare{position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,.42),rgba(255,255,255,.08) 35%,transparent 60%);mix-blend-mode:soft-light}
+.wm{position:absolute;right:-16px;bottom:-18px;width:62%;height:auto;aspect-ratio:1;opacity:.14;transform:rotate(-14deg);pointer-events:none;color:#fff}
+/* onde lumineuse au toucher */
+.ripple{position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.7),rgba(255,255,255,0) 70%);animation:ripple 650ms var(--out) forwards}
+@keyframes ripple{to{transform:scale(14);opacity:0}}
 
-/* Favori : bloc de couleur */
-.fav{background:var(--c);color:#fff;flex-direction:column;justify-content:space-between;padding:14px;
-  box-shadow:0 10px 24px -14px var(--c), inset 0 1px 0 rgba(255,255,255,.18)}
-.fav::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,0) 45%)}
-.fav::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity var(--t-hover);
-  background:radial-gradient(220px circle at var(--mx) var(--my),rgba(255,255,255,.22),transparent 60%)}
-.fav:hover::after,.tilting .fav::after{opacity:1}
-.fav .pic{width:var(--ico-md);height:var(--ico-md);stroke-width:2}
-.fav .wm{position:absolute;right:-14px;bottom:-14px;width:92px;height:92px;stroke-width:1.5;opacity:.16;transform:rotate(-12deg);pointer-events:none}
-.fav .txt{position:relative;min-width:0}
-.fav .nm{display:block;font:600 16px/1.2 var(--f-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fav .sub{display:block;font-size:12px;font-weight:500;color:rgba(255,255,255,.92);margin-top:2px}
-.fav img.pic{border-radius:10px;object-fit:cover}
-.span-big .pic{width:var(--ico-lg);height:var(--ico-lg)}
+.lg{position:absolute;display:grid;place-items:center;border-radius:28%;
+  filter:drop-shadow(calc((var(--ry) + var(--gx)) * -.6px) calc((var(--rx) + var(--gy)) * .6px + 8px) 8px rgba(0,0,0,.35))}
+.lg img{width:100%;height:100%;object-fit:contain;display:block}
+.lg.pk{background:#F6EBDD;color:var(--c)}            /* picto dans un carré crème, comme nos logos */
+.lg.pk svg{width:58%;height:58%;stroke-width:2.2}
+.tx{position:absolute;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35);min-width:0}
+.nm{display:block;font:600 16px/1.15 var(--f-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{display:block;font-size:12px;font-weight:600;color:rgba(255,255,255,.92);margin-top:2px}
+
+/* Grande case (2×2) : logo en haut, texte en bas */
+.span-big .lg{left:14px;top:14px;width:46%;max-width:96px;aspect-ratio:1;transform:translateZ(60px)}
+.span-big .tx{left:16px;right:16px;bottom:14px;transform:translateZ(36px)}
+.span-wide .nm{font-size:15px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .span-big .nm{font-size:22px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.span-big .sub{font-size:13px}
-.span-big .wm{width:150px;height:150px;right:-22px;bottom:-22px}
-
-/* Autres : carte neutre */
-.app{background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:var(--r-md)}
-.chip{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:var(--c);color:#fff;flex:none}
-.chip img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
-.app .nm{font-size:12px;font-weight:600;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
-@media (min-width:600px){.chip{width:52px;height:52px;border-radius:16px}.app .nm{font-size:13px}}
+/* Case large (2×1) : logo à gauche, texte à droite */
+.bento{--lgs:54px}
+@media (min-width:600px){.bento{--lgs:66px}}
+@media (min-width:1000px){.bento{--lgs:74px}}
+.span-wide .lg{left:12px;top:calc(50% - var(--lgs) / 2);width:var(--lgs);height:var(--lgs);transform:translateZ(50px)}
+.span-wide .tx{left:calc(24px + var(--lgs));right:12px;top:50%;transform:translateY(-50%) translateZ(30px)}
+/* Petite case (1×1) : logo centré, nom dessous */
+.app .lg{left:50%;top:12%;height:52%;aspect-ratio:1;transform:translateX(-50%) translateZ(44px)}
+.app .tx{left:4px;right:4px;bottom:7%;text-align:center;transform:translateZ(24px)}
+.app .nm{font-size:12px;font-family:var(--f-body);font-weight:700}
+.app .sub{font-size:10px;margin:0}
+.app .wm{display:none}
+@media (min-width:600px){.app .nm{font-size:13px}}
 
 /* États */
-.state{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:rgba(15,23,42,.55);color:#fff}
-.app .state{position:static;background:none;color:var(--muted);padding:0;font-size:11px;font-weight:600;line-height:1}
-.app .state svg{display:none}
-.todo .pic,.todo .chip{opacity:.6}
+.todo .lg{opacity:.55}
 .off{opacity:.5}
 
 /* Mode modification */
-.editing .tile{outline:2px dashed var(--border);outline-offset:-2px}
+.editing .plate{outline:2px dashed rgba(255,255,255,.7);outline-offset:-5px}
 .badge{position:absolute;top:6px;right:6px;z-index:2;width:36px;height:36px;border-radius:50%;display:none;place-items:center;
-  background:var(--card);color:var(--muted);border:1px solid var(--border);box-shadow:var(--shadow)}
+  background:var(--card);color:var(--muted);border:1px solid var(--border);box-shadow:var(--shadow);transform:translateZ(70px)}
 .badge::before{content:"";position:absolute;inset:-6px}
 .badge.on{color:#B45309}
 .badge.on svg{fill:currentColor}
 .editing .badge{display:grid}
 .editing #favGrid .tile{touch-action:none}
-.tile.dragging{--s:1.05;z-index:5;animation:none;box-shadow:0 24px 40px -16px rgba(0,0,0,.5)}
-.add{background:transparent;border:2px dashed var(--border);box-shadow:none;color:var(--muted)}
-.add .chip{background:var(--card-2);color:var(--fg)}
+.tile.dragging{z-index:5;animation:none}
+.tile.dragging .card{--z:40px;--s:1.04}
+.add .plate{background:transparent;border:2px dashed var(--border);box-shadow:none}
+.add .card::before{display:none}
+.add .lg{background:var(--card-2);color:var(--fg)}
+.add .tx{color:var(--muted);text-shadow:none}
 
+/* Fond : halo qui suit l'inclinaison (profondeur derrière les tuiles) */
+.halo{position:fixed;inset:-30vmax;z-index:-1;pointer-events:none;
+  background:radial-gradient(40vmax 40vmax at calc(50% + var(--gx) * 2.5vmax) calc(25% + var(--gy) * -2.5vmax),color-mix(in srgb,var(--primary) 22%,transparent),transparent 70%)}
 /* ═════ Fenêtres ═════ */
 dialog{border:none;padding:0;background:transparent;color:inherit;width:min(560px,100vw - 24px);max-width:none;max-height:calc(100dvh - 24px)}
 dialog::backdrop{background:var(--scrim)}
@@ -178,13 +202,15 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
 .toast.show{transform:translate(-50%,0);opacity:1}
 
 @media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
-  .tile{transform:none!important}
+  body:not(.fx) *,body:not(.fx) *::before,body:not(.fx) *::after{animation:none!important;transition-duration:.01ms!important}
+  body:not(.fx) .card{transform:none!important}
 }
-body.calm .tile{animation:none;transform:none!important}
+body.calm .tile,body.calm .ripple{animation:none}
+body.calm .card{transform:none!important}
 </style>
 </head>
 <body>
+<div class="halo" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="sliders-horizontal" viewBox="0 0 24 24"><path d="M10 5H3" /> <path d="M12 19H3" /> <path d="M14 3v4" /> <path d="M16 17v4" /> <path d="M21 12h-9" /> <path d="M21 19h-5" /> <path d="M21 5h-7" /> <path d="M8 10v4" /> <path d="M8 12H3" /></symbol><symbol id="x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol><symbol id="smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></symbol><symbol id="monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="trash-2" viewBox="0 0 24 24"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol><symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /> <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" /></symbol><symbol id="qr-code" viewBox="0 0 24 24"><rect width="5" height="5" x="3" y="3" rx="1" /> <rect width="5" height="5" x="16" y="3" rx="1" /> <rect width="5" height="5" x="3" y="16" rx="1" /> <path d="M21 16h-3a2 2 0 0 0-2 2v3" /> <path d="M21 21v.01" /> <path d="M12 7v3a2 2 0 0 1-2 2H7" /> <path d="M3 12h.01" /> <path d="M12 3h.01" /> <path d="M12 16v.01" /> <path d="M16 12h1" /> <path d="M21 12v.01" /> <path d="M12 21v-1" /></symbol><symbol id="sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="download" viewBox="0 0 24 24"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></symbol><symbol id="star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" /></symbol><symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /> <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /> <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /> <path d="m2 2 20 20" /></symbol><symbol id="chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></symbol><symbol id="chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></symbol><symbol id="sprout" viewBox="0 0 24 24"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3" /> <path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4" /> <path d="M5 21h14" /></symbol><symbol id="dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol><symbol id="house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /> <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol><symbol id="speaker" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2" /> <path d="M12 6h.01" /> <circle cx="12" cy="14" r="4" /> <path d="M12 14h.01" /></symbol><symbol id="receipt" viewBox="0 0 24 24"><path d="M12 17V7" /> <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" /></symbol><symbol id="camera" viewBox="0 0 24 24"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" /> <circle cx="12" cy="13" r="3" /></symbol><symbol id="calendar" viewBox="0 0 24 24"><path d="M8 2v3" /> <path d="M16 2v3" /> <rect x="3" y="3" width="18" height="18" rx="2" /> <path d="M3 9h18" /></symbol><symbol id="shopping-cart" viewBox="0 0 24 24"><path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" /> <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25" /> <circle cx="18" cy="20" r="2" /> <circle cx="8" cy="20" r="2" /></symbol><symbol id="music" viewBox="0 0 24 24"><path d="M21 16V3a1 1 0 0 0-1.28-.96l-10 2.917a1 1 0 0 0-.72.96V19" /> <circle cx="18" cy="16" r="3" /> <circle cx="6" cy="19" r="3" /></symbol><symbol id="tv" viewBox="0 0 24 24"><path d="m17 2-5 5-5-5" /> <rect width="20" height="15" x="2" y="7" rx="2" /></symbol><symbol id="map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /> <path d="M15 5.764v15" /> <path d="M9 3.236v15" /></symbol><symbol id="car" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" /> <circle cx="7" cy="17" r="2" /> <path d="M9 17h6" /> <circle cx="17" cy="17" r="2" /></symbol><symbol id="sailboat" viewBox="0 0 24 24"><path d="M10 2v15" /> <path d="M7 22a4 4 0 0 1-4-4 1 1 0 0 1 1-1h16a1 1 0 0 1 1 1 4 4 0 0 1-4 4z" /> <path d="M9.159 2.46a1 1 0 0 1 1.521-.193l9.977 8.98A1 1 0 0 1 20 13H4a1 1 0 0 1-.824-1.567z" /></symbol><symbol id="heart" viewBox="0 0 24 24"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" /></symbol><symbol id="book-open" viewBox="0 0 24 24"><path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol><symbol id="chart-column" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" /></symbol><symbol id="mail" viewBox="0 0 24 24"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /> <rect x="2" y="4" width="20" height="16" rx="2" /></symbol><symbol id="lightbulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /> <path d="M9 18h6" /> <path d="M10 22h4" /></symbol><symbol id="lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /> <path d="M2 12h20" /></symbol><symbol id="image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol><symbol id="settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></symbol></svg>
 
 <div class="wrap" id="app">
@@ -267,7 +293,9 @@ body.calm .tile{animation:none;transform:none!important}
 
   <h4><svg class="i" aria-hidden="true"><use href="#sparkles"/></svg>Effets</h4>
   <label class="chk"><input type="checkbox" id="sTilt"><span>Inclinaison du téléphone (un peu de batterie)</span></label>
-  <label class="chk"><input type="checkbox" id="sCalm"><span>Calmer les animations</span></label>
+  <label class="chk"><input type="checkbox" id="sFx"><span>Garder les effets même si le téléphone demande moins d'animations</span></label>
+  <label class="chk"><input type="checkbox" id="sCalm"><span>Couper tous les effets</span></label>
+  <p class="small" id="fxInfo"></p>
   <label class="chk"><input type="checkbox" id="sTab"><span>Sur PC, ouvrir dans un nouvel onglet</span></label>
   <label class="f"><span>Appareil</span><select class="in" id="sPlat"><option value="auto">Détection automatique</option><option value="android">Toujours Android</option><option value="pc">Toujours PC</option></select></label>
 
@@ -295,7 +323,7 @@ body.calm .tile{animation:none;transform:none!important}
 <script src="qrcode.js"></script>
 <script>
 "use strict";
-const VERSION = "2.0.0";
+const VERSION = "3.0.0";
 
 /* ═════ Stockage ═════
    Toutes les applis sont sur miamax6.github.io : même origine, donc même localStorage.
@@ -317,7 +345,7 @@ const APPS = [
 ];
 const OWNER = "miamax6", DATA_REPO = "miamax6";
 /* Couleurs de tuile : texte blanc ≥ 4,5:1 sur chacune */
-const COLORS = ["#2563EB","#7C3AED","#DB2777","#DC2626","#C2410C","#B45309","#15803D","#0F766E","#0E7490","#334155"];
+const COLORS = ["#2F6B82","#4D6B3A","#8E4A33","#2563EB","#7C3AED","#DB2777","#DC2626","#C2410C","#B45309","#15803D","#0F766E","#0E7490","#334155"];
 const PICTOS = [
   ["wallet","Budget"],["sprout","Plantes"],["dices","Jeux"],["house","Maison"],["speaker","Son"],["receipt","Dépenses"],
   ["camera","Photo"],["calendar","Agenda"],["shopping-cart","Courses"],["music","Musique"],["tv","Télé"],["map","Carte"],
@@ -328,11 +356,11 @@ const PIC = new Set(PICTOS.map(p => p[0]));
 const PAGES = "https://miamax6.github.io/";
 
 const DEFAULT_TILES = () => [
-  { id:"budget",  name:"Budget",  icon:"wallet", color:"#DC2626",
+  { id:"budget",  name:"Budget",  icon:PAGES+"mbauxdijsekta/icon.svg", color:"#2F6B82",
     android:{ mode:"url", url:PAGES+"mbauxdijsekta/" }, pc:{ mode:"url", url:PAGES+"mbauxdijsekta/" } },
-  { id:"jungle",  name:"Jungle",  icon:"sprout", color:"#15803D",
+  { id:"jungle",  name:"Jungle",  icon:PAGES+"your-tiny-jungle/icons/icon.svg", color:"#4D6B3A",
     android:{ mode:"url", url:PAGES+"your-tiny-jungle/" }, pc:{ mode:"url", url:PAGES+"your-tiny-jungle/" } },
-  { id:"yam",     name:"Yam's",   icon:"dices", color:"#B45309",
+  { id:"yam",     name:"Yam's",   icon:PAGES+"yam-iamax/icon.svg", color:"#8E4A33",
     android:{ mode:"url", url:PAGES+"yam-iamax/" }, pc:{ mode:"url", url:PAGES+"yam-iamax/" } },
   { id:"ha",      name:"Home Assistant", icon:"house", color:"#0E7490",
     android:{ mode:"app", pkg:"io.homeassistant.companion.android", deep:"homeassistant://navigate/" }, pc:{ mode:"url", url:"" } },
@@ -344,7 +372,7 @@ const DEFAULT_TILES = () => [
 
 let cfg = LS.json(K.cfg, null);
 if (!cfg || !Array.isArray(cfg.tiles)) cfg = { v:2, tiles:DEFAULT_TILES(), favs:["budget","ha","jungle"], prefs:{} };
-cfg.prefs = Object.assign({ tilt:true, calm:false, newTab:true, plat:"auto", name:"" }, cfg.prefs || {});
+cfg.prefs = Object.assign({ tilt:true, fx:false, calm:false, newTab:true, plat:"auto", name:"" }, cfg.prefs || {});
 cfg.favs = (cfg.favs || []).filter(id => cfg.tiles.some(t => t.id === id));
 /* Migration v1 → v2 : émojis → pictos, anciennes couleurs → palette contrastée, lien direct Tricount */
 if ((cfg.v || 1) < 2){
@@ -360,6 +388,16 @@ if ((cfg.v || 1) < 2){
     if (t.id === "tricount" && t.android?.mode === "app" && !t.android.deep) t.android.deep = "https://tricount.com/link/tricounts";
   });
   cfg.v = 2; LS.put(K.cfg, cfg);
+}
+/* Migration v2 → v3 : nos vrais logos sur Budget, Jungle et Yam's */
+if (cfg.v < 3){
+  const LOGO = { budget:[PAGES+"mbauxdijsekta/icon.svg","#2F6B82","wallet"], jungle:[PAGES+"your-tiny-jungle/icons/icon.svg","#4D6B3A","sprout"], yam:[PAGES+"yam-iamax/icon.svg","#8E4A33","dices"] };
+  cfg.tiles.forEach(t => {
+    const l = LOGO[t.id]; if (!l) return;
+    if (!t.icon || t.icon === l[2] || /miamax6\.github\.io/.test(t.icon)) t.icon = l[0];
+    if (["#DC2626","#15803D","#B45309"].includes(t.color)) t.color = l[1];
+  });
+  cfg.v = 3; LS.put(K.cfg, cfg);
 }
 let usage = LS.json(K.use, {});
 const save = () => LS.put(K.cfg, cfg);
@@ -398,10 +436,10 @@ function target(t){
 
 /* ═════ Rendu ═════ */
 let editing = false;
-function pic(t, cls){
+function logo(t){
   const ic = (t.icon || "").trim();
-  if (isImg(ic)) return `<img class="${cls}" src="${esc(ic)}" alt="" loading="lazy">`;
-  return svg(PIC.has(ic) ? ic : "layout-grid", cls);
+  if (isImg(ic)) return `<span class="lg"><img src="${esc(ic)}" alt="" loading="lazy" draggable="false"></span>`;
+  return `<span class="lg pk">${svg(PIC.has(ic) ? ic : "layout-grid")}</span>`;
 }
 function tileHtml(t, i, fav){
   const tg = target(t), isFav = cfg.favs.includes(t.id);
@@ -410,25 +448,26 @@ function tileHtml(t, i, fav){
   if (tg.todo) cls.push("todo");
   if (tg.off || t.hidden) cls.push("off");
   const href = !editing && tg.href ? ` href="${esc(tg.href)}"${tg.blank ? ' target="_blank" rel="noopener"' : ""}` : "";
-  const st = tg.todo ? `<span class="state">${svg("plus","i")}À régler</span>` : (editing && (tg.off || t.hidden) ? `<span class="state">${svg("eye-off","i")}Masquée</span>` : "");
+  const sub = tg.todo ? "À régler" : (editing && (tg.off || t.hidden) ? "Masquée" : (fav ? (tg.sub || "") : ""));
   const label = esc(t.name) + (tg.todo ? ", à régler" : "") + (editing ? ", modifier" : "");
   const badge = `<span class="badge${isFav ? " on" : ""}" data-star role="button" tabindex="0" aria-pressed="${isFav}" aria-label="${isFav ? "Retirer " : "Épingler "}${esc(t.name)}">${svg("star","i")}</span>`;
-  const body = fav
-    ? `${pic(t, "pic")}${svg(PIC.has(t.icon) ? t.icon : "layout-grid", "wm")}<span class="txt"><span class="nm">${esc(t.name)}</span><span class="sub">${tg.todo ? "À régler" : (tg.sub || "")}</span></span>`
-    : `<span class="chip">${pic(t, "i")}</span><span class="nm">${esc(t.name)}</span>`;
-  return `<a class="${cls.join(" ")}${span}" data-id="${esc(t.id)}"${fav ? " data-fav" : ""}${href} style="--i:${i};--c:${esc(t.color || COLORS[0])}" ${href ? "" : 'role="button" tabindex="0"'} aria-label="${label}">${badge}${body}${fav && tg.todo ? "" : st}</a>`;
+  const wm = fav ? svg(PIC.has(t.icon) ? t.icon : (t.id === "budget" ? "wallet" : t.id === "jungle" ? "sprout" : t.id === "yam" ? "dices" : "layout-grid"), "wm") : "";
+  return `<a class="${cls.join(" ")}${span}" data-id="${esc(t.id)}"${fav ? " data-fav" : ""}${href} style="--i:${i};--c:${esc(t.color || COLORS[0])}" ${href ? "" : 'role="button" tabindex="0"'} aria-label="${label}">`
+    + `<span class="card"><span class="plate">${wm}<span class="glare"></span></span>${logo(t)}`
+    + `<span class="tx"><span class="nm">${esc(t.name)}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</span>${badge}</span></a>`;
 }
 function visible(t){ if (editing) return true; const tg = target(t); return !(tg.off || t.hidden); }
 function render(){
   document.body.classList.toggle("editing", editing);
   document.body.classList.toggle("calm", !!cfg.prefs.calm);
+  document.body.classList.toggle("fx", !!cfg.prefs.fx);
   const byId = Object.fromEntries(cfg.tiles.map(t => [t.id, t]));
   const favs = cfg.favs.map(id => byId[id]).filter(t => t && visible(t));
   const rest = cfg.tiles.filter(t => !cfg.favs.includes(t.id) && visible(t))
     .sort((a, b) => (usage[b.id]?.n || 0) - (usage[a.id]?.n || 0) || (usage[b.id]?.at || 0) - (usage[a.id]?.at || 0) || a.name.localeCompare(b.name, "fr"));
   $("#favGrid").innerHTML = favs.map((t, i) => tileHtml(t, i, true)).join("");
   $("#allGrid").innerHTML = rest.map((t, i) => tileHtml(t, i + favs.length, false)).join("")
-    + (editing ? `<button class="tile app add" id="bAdd" style="--i:${rest.length + favs.length}" aria-label="Ajouter une appli"><span class="chip">${svg("plus")}</span><span class="nm">Ajouter</span></button>` : "");
+    + (editing ? `<button class="tile app add" id="bAdd" style="--i:${rest.length + favs.length};--c:#64748B" aria-label="Ajouter une appli"><span class="card"><span class="plate"></span><span class="lg pk">${svg("plus")}</span><span class="tx"><span class="nm">Ajouter</span></span></span></button>` : "");
   $("#favHint").hidden = favs.length > 0;
   $("#allTitle").textContent = Object.keys(usage).length ? "Les plus utilisées" : "Toutes les applis";
   $("#editHint").hidden = !editing;
@@ -446,14 +485,49 @@ function toggleFav(id){
   if (i >= 0) cfg.favs.splice(i, 1); else cfg.favs.push(id);
   save(); render();
 }
-let longT = null, longFired = false, dragged = false;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+let longT = null, longFired = false, dragged = false, touchTile = null;
+const fxOn = () => !cfg.prefs.calm && (!reduced.matches || cfg.prefs.fx);
+/* Toucher : la tuile s'enfonce là où le doigt appuie, suit le doigt, puis rebondit */
+function pressAt(t, e){
+  const c = t.querySelector(".card"), r = t.getBoundingClientRect();
+  const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+  c.style.setProperty("--ry", ((x - .5) * 22).toFixed(1));
+  c.style.setProperty("--rx", ((.5 - y) * 22).toFixed(1));
+  c.style.setProperty("--mx", (x * 100).toFixed(0) + "%"); c.style.setProperty("--my", (y * 100).toFixed(0) + "%");
+}
+function release(t){
+  t.classList.remove("touching");
+  const c = t.querySelector(".card"); if (!c) return;
+  ["--rx","--ry","--z","--s","--mx","--my"].forEach(p => c.style.removeProperty(p));
+}
 document.addEventListener("pointerdown", e => {
-  const t = e.target.closest(".tile"); if (!t || t.classList.contains("add") || e.target.closest("[data-star]")) return;
-  t.classList.add("press"); longFired = false;
-  if (!editing){ clearTimeout(longT); longT = setTimeout(() => { longFired = true; t.classList.remove("press"); if (navigator.vibrate) navigator.vibrate(10); openTile(t.dataset.id); }, 550); }
+  const t = e.target.closest(".tile"); if (!t || e.target.closest("[data-star]")) return;
+  longFired = false;
+  if (fxOn()){
+    touchTile = t; t.classList.add("touching");
+    const c = t.querySelector(".card"); c.style.setProperty("--z", "-26px"); c.style.setProperty("--s", ".96"); pressAt(t, e);
+    const plate = t.querySelector(".plate"), r = plate.getBoundingClientRect(), rp = document.createElement("span");
+    rp.className = "ripple"; rp.style.left = (e.clientX - r.left) + "px"; rp.style.top = (e.clientY - r.top) + "px";
+    plate.appendChild(rp); setTimeout(() => rp.remove(), 700);
+  }
+  if (!editing && !t.classList.contains("add")){ clearTimeout(longT); longT = setTimeout(() => { longFired = true; if (touchTile) release(touchTile); if (navigator.vibrate) navigator.vibrate(10); openTile(t.dataset.id); }, 550); }
 });
-const unpress = () => { clearTimeout(longT); document.querySelectorAll(".tile.press").forEach(x => x.classList.remove("press")); };
-["pointerup","pointercancel","pointerleave"].forEach(ev => document.addEventListener(ev, unpress, true));
+document.addEventListener("pointermove", e => {
+  if (touchTile && e.buttons !== 0){ pressAt(touchTile, e); return; }
+  if (e.pointerType !== "mouse" || !fxOn()) return;                 // survol à la souris : léger relief
+  const t = e.target.closest(".tile"); if (!t) return;
+  const c = t.querySelector(".card"), r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  c.style.setProperty("--ry", ((.5 - x) * -14).toFixed(1)); c.style.setProperty("--rx", ((y - .5) * -14).toFixed(1));
+  c.style.setProperty("--z", "18px");
+  c.style.setProperty("--mx", (x * 100).toFixed(0) + "%"); c.style.setProperty("--my", (y * 100).toFixed(0) + "%");
+}, { passive:true });
+document.addEventListener("pointerout", e => {
+  const t = e.target.closest?.(".tile"); if (!t || t.contains(e.relatedTarget) || t === touchTile) return;
+  release(t);
+});
+const unpress = () => { clearTimeout(longT); if (touchTile){ release(touchTile); touchTile = null; } };
+["pointerup","pointercancel"].forEach(ev => document.addEventListener(ev, unpress, true));
 document.addEventListener("contextmenu", e => { if (e.target.closest(".tile")) e.preventDefault(); });
 document.addEventListener("click", e => {
   if (e.target.closest("#bAdd")){ openTile(null); return; }
@@ -473,41 +547,28 @@ document.addEventListener("keydown", e => {
   if (e.target.matches?.(".tile:not([href])")){ e.preventDefault(); e.target.click(); }
 });
 
-/* Relief + reflet au survol (souris) */
-document.addEventListener("pointermove", e => {
-  if (e.pointerType !== "mouse" || cfg.prefs.calm) return;
-  const t = e.target.closest(".tile"); if (!t) return;
-  const r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-  t.style.setProperty("--ry", ((x - .5) * 10).toFixed(1) + "deg");
-  t.style.setProperty("--rx", ((.5 - y) * 10).toFixed(1) + "deg");
-  t.style.setProperty("--mx", (x * 100).toFixed(0) + "%");
-  t.style.setProperty("--my", (y * 100).toFixed(0) + "%");
-}, { passive:true });
-document.addEventListener("pointerout", e => {
-  const t = e.target.closest?.(".tile"); if (!t || t.contains(e.relatedTarget)) return;
-  ["--rx","--ry","--mx","--my"].forEach(p => t.style.removeProperty(p));
-});
-
 /* Inclinaison du téléphone : une variable globale, mise à jour au rythme de l'écran */
-const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 let tiltOn = false, tiltRaf = 0, tgt = { x:0, y:0 }, cur = { x:0, y:0 }, base = null;
+let gyroN = 0;
 function onOrient(e){
   if (e.beta == null || e.gamma == null) return;
+  gyroN++;
   if (!base) base = { b:e.beta, g:e.gamma };            // position de départ = neutre
-  tgt.x = Math.max(-1, Math.min(1, (e.gamma - base.g) / 25));
-  tgt.y = Math.max(-1, Math.min(1, (e.beta - base.b) / 25));
+  tgt.x = Math.max(-1, Math.min(1, (e.gamma - base.g) / 20));
+  tgt.y = Math.max(-1, Math.min(1, (e.beta - base.b) / 20));
+  base.b += (e.beta - base.b) * .004; base.g += (e.gamma - base.g) * .004;   // le neutre suit doucement la façon de tenir le téléphone
   if (!tiltRaf) tiltRaf = requestAnimationFrame(stepTilt);
 }
 function stepTilt(){
   cur.x += (tgt.x - cur.x) * .15; cur.y += (tgt.y - cur.y) * .15;
   const root = document.documentElement.style;
-  root.setProperty("--gx", (cur.x * 7).toFixed(2));
-  root.setProperty("--gy", (-cur.y * 7).toFixed(2));
-  document.querySelectorAll(".fav").forEach(t => { t.style.setProperty("--mx", (50 + cur.x * 45).toFixed(0) + "%"); t.style.setProperty("--my", (20 + cur.y * 40).toFixed(0) + "%"); });
+  root.setProperty("--gx", (cur.x * 12).toFixed(2));
+  root.setProperty("--gy", (-cur.y * 12).toFixed(2));
+  document.querySelectorAll(".tile:not(.touching) .card").forEach(c => { c.style.setProperty("--mx", (50 + cur.x * 50).toFixed(0) + "%"); c.style.setProperty("--my", (20 + cur.y * 45).toFixed(0) + "%"); });
   tiltRaf = (Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) > .002) ? requestAnimationFrame(stepTilt) : 0;
 }
 function setTilt(){
-  const want = cfg.prefs.tilt && !cfg.prefs.calm && !reduced.matches && isAndroid() && !document.hidden && "DeviceOrientationEvent" in window;
+  const want = cfg.prefs.tilt && fxOn() && isAndroid() && !document.hidden && "DeviceOrientationEvent" in window;
   document.body.classList.toggle("tilting", want);
   if (want === tiltOn) return;
   tiltOn = want; base = null;
@@ -712,6 +773,9 @@ const dSet = $("#dSet");
 function openSet(){
   $("#sName").value = cfg.prefs.name || "";
   $("#sPat").value = LS.get(K.pat) || ""; $("#sPat").type = "password"; $("#sShow").checked = false;
+  $("#sFx").checked = !!cfg.prefs.fx;
+  $("#fxInfo").textContent = (reduced.matches ? "Ton téléphone demande moins d'animations. " : "")
+    + (!isAndroid() ? "Inclinaison : seulement sur Android." : tiltOn ? (gyroN ? "Inclinaison : capteur actif." : "Inclinaison : aucun signal du capteur pour l'instant.") : "Inclinaison : coupée.");
   $("#sTilt").checked = !!cfg.prefs.tilt; $("#sCalm").checked = !!cfg.prefs.calm; $("#sTab").checked = !!cfg.prefs.newTab;
   $("#sPlat").value = cfg.prefs.plat; $("#qrOut").innerHTML = ""; $("#ver").textContent = VERSION;
   patState(); dSet.showModal();
@@ -719,7 +783,7 @@ function openSet(){
 dSet.addEventListener("click", e => { if (e.target.closest("[data-close]")) dSet.close(); });
 $("#sShow").addEventListener("change", e => { $("#sPat").type = e.target.checked ? "text" : "password"; });
 $("#sName").addEventListener("input", e => { cfg.prefs.name = e.target.value; save(); render(); });
-[["#sTilt","tilt"],["#sCalm","calm"],["#sTab","newTab"]].forEach(([s, k]) => $(s).addEventListener("change", e => { cfg.prefs[k] = e.target.checked; save(); setTilt(); render(); }));
+[["#sTilt","tilt"],["#sFx","fx"],["#sCalm","calm"],["#sTab","newTab"]].forEach(([s, k]) => $(s).addEventListener("change", e => { cfg.prefs[k] = e.target.checked; save(); setTilt(); render(); }));
 $("#sPlat").addEventListener("change", e => { cfg.prefs.plat = e.target.value; save(); setTilt(); render(); });
 $("#bPat").addEventListener("click", () => {
   const pat = $("#sPat").value.trim();
