@@ -246,7 +246,7 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
 <script src="qrcode.js"></script>
 <script>
 "use strict";
-const VERSION = "4.0.0";
+const VERSION = "4.1.0";
 
 const LS = {
   get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
@@ -282,12 +282,12 @@ const DEFAULT_TILES = () => [
     android:{ mode:"app", pkg:"io.homeassistant.companion.android", deep:"homeassistant://navigate/" }, pc:{ mode:"url", url:"" } },
   { id:"musiccast", name:"MusicCast", icon:"logos/musiccast.webp", round:true, color:"#7C3AED",
     android:{ mode:"app", pkg:"com.yamaha.av.musiccastcontroller", deep:"com.yamaha.av.musiccastcontroller://" }, pc:{ mode:"url", url:"" } },
-  { id:"tricount", name:"Tricount", icon:"receipt", color:"#0F766E",
+  { id:"tricount", name:"Tricount", icon:"logos/tricount.webp", round:true, color:"#0F766E",
     android:{ mode:"app", pkg:"com.tribab.tricount.android", deep:"https://tricount.com/link/tricounts" }, pc:{ mode:"url", url:"https://tricount.com/" } }
 ];
 
 let cfg = LS.json(K.cfg, null);
-if (!cfg || !Array.isArray(cfg.tiles)) cfg = { v:4, tiles:DEFAULT_TILES(), favs:["budget","ha","jungle"], prefs:{} };
+if (!cfg || !Array.isArray(cfg.tiles)) cfg = { v:5, tiles:DEFAULT_TILES(), favs:["budget","ha","jungle"], prefs:{} };
 cfg.prefs = Object.assign({ theme:"auto", amb:"petrole", big:2, tilt:true, fx:false, calm:false, newTab:true, plat:"auto", name:"" }, cfg.prefs || {});
 cfg.favs = (cfg.favs || []).filter(id => cfg.tiles.some(t => t.id === id));
 /* Migration v1 → v2 : émojis → pictos, anciennes couleurs → palette contrastée, lien direct Tricount */
@@ -325,6 +325,11 @@ if (cfg.v < 4){
     }
   });
   cfg.v = 4; LS.put(K.cfg, cfg);
+}
+/* Migration v4 → v5 : vrai logo Tricount */
+if (cfg.v < 5){
+  cfg.tiles.forEach(t => { if (t.id === "tricount" && (!t.icon || t.icon === "receipt")){ t.icon = "logos/tricount.webp"; t.round = true; } });
+  cfg.v = 5; LS.put(K.cfg, cfg);
 }
 let usage = LS.json(K.use, {});
 const save = () => LS.put(K.cfg, cfg);
