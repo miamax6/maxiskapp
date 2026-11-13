@@ -5,286 +5,288 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MaxiskApp</title>
 <meta name="description" content="Toutes nos applis au même endroit">
-<meta name="theme-color" content="#0b1020" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#e9edfb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0F19" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap">
 <style>
-/* ═════ Jetons ═════ */
+/* ═════ Jetons (design system ui-ux-pro-max : Bento Box Grid + Vibrant & Block-based) ═════ */
 :root{
   color-scheme: light dark;
-  --bg:#0b1020; --fg:#f4f6ff; --muted:#a3abc8;
-  --glass:rgba(255,255,255,.075); --glass-hi:rgba(255,255,255,.14);
-  --edge:rgba(255,255,255,.16); --edge-hi:rgba(255,255,255,.34);
-  --shadow:0 18px 40px -18px rgba(0,0,0,.75), 0 2px 6px rgba(0,0,0,.25);
-  --b1:#7c3aed; --b2:#06b6d4; --b3:#f43f5e; --b4:#f59e0b;
-  --accent:#8b5cf6; --on-accent:#fff; --danger:#f43f5e; --ok:#22c55e;
-  --r:22px; --r-sm:14px;
+  --bg:#F5F5F7; --card:#FFFFFF; --card-2:#F1F5FD; --fg:#0F172A; --muted:#475569; --border:#E4ECFC;
+  --primary:#2563EB; --on-primary:#FFFFFF; --danger:#DC2626; --ring:#2563EB;
+  --shadow:0 4px 6px rgba(15,23,42,.05), 0 1px 2px rgba(15,23,42,.06);
+  --scrim:rgba(15,23,42,.45);
+  --r-lg:24px; --r-md:20px; --r-sm:14px;
+  --gap:12px; --pad:16px;
+  --ico-sm:24px; --ico-md:32px; --ico-lg:40px;
+  --t-press:100ms; --t-hover:200ms; --t-enter:400ms;
   --spring:cubic-bezier(.34,1.56,.64,1); --out:cubic-bezier(.22,1,.36,1);
-  --gx:0; --gy:0;               /* inclinaison globale (téléphone) */
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --gx:0; --gy:0;
+  --f-head:"Poppins", system-ui, sans-serif; --f-body:"Open Sans", system-ui, sans-serif;
 }
-@media (prefers-color-scheme: light){
+@media (prefers-color-scheme: dark){
   :root{
-    --bg:#e9edfb; --fg:#0f172a; --muted:#4b5575;
-    --glass:rgba(255,255,255,.52); --glass-hi:rgba(255,255,255,.8);
-    --edge:rgba(255,255,255,.75); --edge-hi:rgba(255,255,255,1);
-    --shadow:0 18px 36px -20px rgba(40,50,110,.45), 0 2px 6px rgba(40,50,110,.12);
-    --b1:#a78bfa; --b2:#67e8f9; --b3:#fda4af; --b4:#fcd34d;
-    --accent:#6d28d9;
+    --bg:#0B0F19; --card:#151B2B; --card-2:#1C2436; --fg:#F1F5F9; --muted:#A5B0C3; --border:#26314A;
+    --primary:#3B82F6; --ring:#93C5FD;
+    --shadow:0 4px 6px rgba(0,0,0,.35);
+    --scrim:rgba(0,0,0,.6);
   }
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{background:var(--bg)}
-html,body{margin:0;min-height:100%;color:var(--fg)}
-body{background:transparent}
-body{min-height:100dvh;overflow-x:hidden;line-height:1.5;font-size:16px}
+body{margin:0;min-height:100dvh;color:var(--fg);font:400 16px/1.5 var(--f-body);overflow-x:hidden}
 button,input,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px}
+:focus-visible{outline:3px solid var(--ring);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg.i,svg.pic,svg.wm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+svg.i{width:var(--ico-sm);height:var(--ico-sm);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
-/* ═════ Fond animé ═════ */
-.sky{position:fixed;inset:-20vmax;z-index:-1;filter:blur(60px) saturate(1.2);pointer-events:none}
-.sky i{position:absolute;width:55vmax;height:55vmax;border-radius:50%;opacity:.55;animation:float 26s var(--out) infinite alternate}
-.sky i:nth-child(1){background:var(--b1);left:5%;top:0}
-.sky i:nth-child(2){background:var(--b2);right:0;top:20%;animation-duration:32s;animation-delay:-8s}
-.sky i:nth-child(3){background:var(--b3);left:25%;bottom:-5%;animation-duration:29s;animation-delay:-14s;opacity:.4}
-.sky i:nth-child(4){background:var(--b4);right:20%;bottom:10%;width:30vmax;height:30vmax;animation-duration:36s;opacity:.3}
-@keyframes float{to{transform:translate3d(8vmax,-6vmax,0) scale(1.15)}}
-.grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.07;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.wrap{max-width:1120px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(32px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+@media (min-width:768px){.wrap{padding-left:max(32px,env(safe-area-inset-left));padding-right:max(32px,env(safe-area-inset-right))}}
 
-/* ═════ Mise en page ═════ */
-.wrap{max-width:1100px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
-header{display:flex;align-items:center;gap:12px;margin:6px 0 22px}
-.brand{flex:1;min-width:0}
-.brand h1{margin:0;font-size:clamp(26px,6vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.1;
-  background:linear-gradient(100deg,var(--fg) 30%,var(--accent) 70%,var(--b2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.brand p{margin:2px 0 0;color:var(--muted);font-size:15px}
-.ibtn{width:46px;height:46px;flex:none;display:grid;place-items:center;border-radius:15px;cursor:pointer;
-  background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
-  box-shadow:var(--shadow);transition:transform .25s var(--spring),background .2s}
-.ibtn:hover{background:var(--glass-hi)}
-.ibtn:active{transform:scale(.92)}
-.ibtn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:transparent}
-svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* En-tête */
+header{display:flex;align-items:flex-end;gap:8px;margin:8px 0 24px}
+.hello{flex:1;min-width:0}
+.hello small{display:block;color:var(--muted);font-size:14px;font-weight:500}
+.hello h1{margin:0;font:700 clamp(26px,7vw,34px)/1.15 var(--f-head);letter-spacing:-.01em;overflow-wrap:anywhere}
+.ibtn{width:48px;height:48px;flex:none;display:grid;place-items:center;border-radius:var(--r-sm);cursor:pointer;
+  background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);color:var(--fg);
+  transition:background var(--t-hover),transform var(--t-press) var(--out)}
+.ibtn:active{transform:scale(.94)}
+.ibtn:disabled{opacity:.4;cursor:default}
+.ibtn[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:transparent}
 
-section{margin:0 0 26px}
-section h2{display:flex;align-items:center;gap:8px;margin:0 0 12px 4px;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.hint{color:var(--muted);font-size:14px;margin:4px 4px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:14px;perspective:900px}
-@media (min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:18px}}
+section{margin:0 0 32px;min-width:0}
+@media (min-width:1000px){.main{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}.main .bento{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:118px}}
+section h2{margin:0 0 12px 2px;font:600 16px/1.3 var(--f-head);color:var(--muted)}
+.hint{color:var(--muted);font-size:14px;margin:8px 2px 0}
 
-/* ═════ Tuiles en verre ═════ */
-.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-  aspect-ratio:1/1;min-height:98px;padding:12px 8px;border-radius:var(--r);text-decoration:none;color:inherit;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
-  background:linear-gradient(145deg,var(--glass-hi),var(--glass) 55%);
-  border:1px solid var(--edge);border-top-color:var(--edge-hi);
-  backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
-  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.25);
-  transform-style:preserve-3d;
-  --rx:0deg; --ry:0deg; --s:1; --mx:50%; --my:20%;
+/* ═════ Grille bento ═════ */
+.bento{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(84px,calc((100vw - 32px - 36px) / 4));grid-auto-flow:dense;gap:var(--gap);perspective:1000px}
+@media (min-width:600px){.bento{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:104px;--gap:16px}}
+@media (min-width:1000px){.bento{grid-template-columns:repeat(8,minmax(0,1fr));grid-auto-rows:116px}}
+.span-big{grid-column:span 2;grid-row:span 2}
+.span-wide{grid-column:span 2}
+
+.tile{position:relative;display:flex;min-width:0;border-radius:var(--r-lg);text-decoration:none;color:inherit;cursor:pointer;overflow:hidden;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;outline-offset:3px;
+  --rx:0deg; --ry:0deg; --s:1; --mx:30%; --my:0%;
   transform:rotateX(calc(var(--rx) + var(--gy) * 1deg)) rotateY(calc(var(--ry) + var(--gx) * 1deg)) scale(var(--s));
-  transition:transform .45s var(--spring), box-shadow .3s, background .3s;
-  animation:pop .55s var(--spring) both; animation-delay:calc(var(--i,0) * 45ms)}
-.tile::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;mix-blend-mode:soft-light;opacity:.9;
-  background:radial-gradient(120px circle at var(--mx) var(--my),rgba(255,255,255,.55),transparent 60%)}
-.tile.press{--s:.92;transition:transform .12s var(--out)}
-@keyframes pop{from{opacity:0;transform:translateY(16px) scale(.9)}}
-.ico{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font-size:30px;line-height:1;
-  background:linear-gradient(150deg,color-mix(in srgb,var(--c,#8b5cf6) 92%,white),color-mix(in srgb,var(--c,#8b5cf6) 70%,black));
-  box-shadow:0 10px 18px -8px color-mix(in srgb,var(--c,#8b5cf6) 85%,transparent), inset 0 1px 0 rgba(255,255,255,.45);
-  transform:translateZ(28px)}
-.ico img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
-.name{font-size:14px;font-weight:600;text-align:center;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;transform:translateZ(16px)}
-.tile .tag{position:absolute;bottom:6px;font-size:11px;color:var(--muted)}
-.tile.todo .ico{filter:grayscale(.8);opacity:.6}
-.tile.off{opacity:.45}
+  transition:transform var(--t-hover) var(--out), filter var(--t-press), box-shadow var(--t-hover);
+  animation:enter var(--t-enter) var(--spring) both; animation-delay:calc(var(--i,0) * 60ms)}
+@keyframes enter{from{opacity:0;transform:translateY(16px) scale(.92)}}
+@media (hover:hover){.tile:hover{--s:1.02}}
+.tile.press{--s:.97;filter:brightness(.94);transition-duration:var(--t-press)}
 
-/* Mode édition */
-.badge{position:absolute;top:-8px;right:-8px;width:34px;height:34px;border-radius:50%;display:none;place-items:center;cursor:pointer;
-  background:var(--bg);border:1px solid var(--edge-hi);box-shadow:var(--shadow);transform:translateZ(40px);color:var(--muted)}
-.badge.on{color:#f59e0b}
-.badge.on svg{fill:#f59e0b}
+/* Favori : bloc de couleur */
+.fav{background:var(--c);color:#fff;flex-direction:column;justify-content:space-between;padding:14px;
+  box-shadow:0 10px 24px -14px var(--c), inset 0 1px 0 rgba(255,255,255,.18)}
+.fav::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,0) 45%)}
+.fav::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity var(--t-hover);
+  background:radial-gradient(220px circle at var(--mx) var(--my),rgba(255,255,255,.22),transparent 60%)}
+.fav:hover::after,.tilting .fav::after{opacity:1}
+.fav .pic{width:var(--ico-md);height:var(--ico-md);stroke-width:2}
+.fav .wm{position:absolute;right:-14px;bottom:-14px;width:92px;height:92px;stroke-width:1.5;opacity:.16;transform:rotate(-12deg);pointer-events:none}
+.fav .txt{position:relative;min-width:0}
+.fav .nm{display:block;font:600 16px/1.2 var(--f-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fav .sub{display:block;font-size:12px;font-weight:500;color:rgba(255,255,255,.92);margin-top:2px}
+.fav img.pic{border-radius:10px;object-fit:cover}
+.span-big .pic{width:var(--ico-lg);height:var(--ico-lg)}
+.span-big .nm{font-size:22px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.span-big .sub{font-size:13px}
+.span-big .wm{width:150px;height:150px;right:-22px;bottom:-22px}
+
+/* Autres : carte neutre */
+.app{background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border-radius:var(--r-md)}
+.chip{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:var(--c);color:#fff;flex:none}
+.chip img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.app .nm{font-size:12px;font-weight:600;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+@media (min-width:600px){.chip{width:52px;height:52px;border-radius:16px}.app .nm{font-size:13px}}
+
+/* États */
+.state{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:rgba(15,23,42,.55);color:#fff}
+.app .state{position:static;background:none;color:var(--muted);padding:0;font-size:11px;font-weight:600;line-height:1}
+.app .state svg{display:none}
+.todo .pic,.todo .chip{opacity:.6}
+.off{opacity:.5}
+
+/* Mode modification */
+.editing .tile{outline:2px dashed var(--border);outline-offset:-2px}
+.badge{position:absolute;top:6px;right:6px;z-index:2;width:36px;height:36px;border-radius:50%;display:none;place-items:center;
+  background:var(--card);color:var(--muted);border:1px solid var(--border);box-shadow:var(--shadow)}
+.badge::before{content:"";position:absolute;inset:-6px}
+.badge.on{color:#B45309}
+.badge.on svg{fill:currentColor}
 .editing .badge{display:grid}
-.editing .tile{animation:pop .55s var(--spring) both, wob .9s ease-in-out infinite alternate;animation-delay:calc(var(--i,0) * 45ms), calc(var(--i,0) * -130ms)}
-@keyframes wob{from{rotate:-1.2deg}to{rotate:1.2deg}}
 .editing #favGrid .tile{touch-action:none}
-.tile.dragging{--s:1.08;z-index:5;animation:none;box-shadow:0 30px 50px -18px rgba(0,0,0,.7);opacity:.95}
-.add{border-style:dashed;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;color:var(--muted)}
-.add .ico{background:var(--glass);box-shadow:none;color:var(--fg)}
+.tile.dragging{--s:1.05;z-index:5;animation:none;box-shadow:0 24px 40px -16px rgba(0,0,0,.5)}
+.add{background:transparent;border:2px dashed var(--border);box-shadow:none;color:var(--muted)}
+.add .chip{background:var(--card-2);color:var(--fg)}
 
 /* ═════ Fenêtres ═════ */
-dialog{border:none;padding:0;background:transparent;color:inherit;max-width:min(560px,94vw);width:100%;max-height:92dvh}
-dialog::backdrop{background:rgba(5,8,20,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-dialog[open]{animation:dlg .35s var(--spring)}
-@keyframes dlg{from{opacity:0;transform:translateY(24px) scale(.96)}}
-.sheet{background:color-mix(in srgb,var(--bg) 78%,transparent);border:1px solid var(--edge);border-radius:26px;
-  backdrop-filter:blur(26px) saturate(1.5);-webkit-backdrop-filter:blur(26px) saturate(1.5);box-shadow:var(--shadow);
-  padding:20px;max-height:92dvh;overflow:auto}
-.sheet h3{margin:0 0 4px;font-size:21px}
-.sheet h4{margin:22px 0 8px;font-size:15px;display:flex;align-items:center;gap:8px}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
-label.f{display:block;margin:12px 0 0}
-label.f>span{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 5px 2px}
-.in{width:100%;min-height:46px;padding:10px 13px;border-radius:var(--r-sm);border:1px solid var(--edge);background:var(--glass);outline:none}
-.in:focus{border-color:var(--accent)}
+dialog{border:none;padding:0;background:transparent;color:inherit;width:min(560px,100vw - 24px);max-width:none;max-height:calc(100dvh - 24px)}
+dialog::backdrop{background:var(--scrim)}
+dialog[open]{animation:dlg 300ms var(--out)}
+@keyframes dlg{from{opacity:0;transform:translateY(24px)}}
+.sheet{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:0 24px 48px -12px rgba(0,0,0,.35);padding:20px;max-height:calc(100dvh - 24px);overflow:auto}
+.sheet h3{margin:0;font:700 22px/1.2 var(--f-head)}
+.sheet h4{margin:24px 0 8px;font:600 16px/1.3 var(--f-head);display:flex;align-items:center;gap:8px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+label.f{display:block;margin:16px 0 0}
+label.f>span,.lab{display:block;font-size:14px;font-weight:600;color:var(--fg);margin:0 0 6px 2px}
+.in{width:100%;min-height:48px;padding:10px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--card-2);outline:none}
+.in:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 25%,transparent)}
 select.in{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 15px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
-select.in option{background:var(--bg)}
-.small{font-size:13px;color:var(--muted);margin:6px 2px 0}
-.btn{min-height:46px;padding:10px 16px;border-radius:var(--r-sm);border:1px solid var(--edge);background:var(--glass);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:8px;transition:transform .2s var(--spring)}
-.btn:active{transform:scale(.95)}
-.btn.pri{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.small{font-size:14px;color:var(--muted);margin:6px 2px 0}
+.btn{min-height:48px;padding:10px 18px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--card-2);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform var(--t-press) var(--out),filter var(--t-press)}
+.btn:active{transform:scale(.97);filter:brightness(.95)}
+.btn.pri{background:var(--primary);color:var(--on-primary);border-color:transparent}
 .btn.danger{color:var(--danger)}
-.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
 .btns .grow{flex:1}
-.card{border:1px solid var(--edge);border-radius:18px;padding:12px 14px;margin-top:10px;background:var(--glass)}
-.card legend{font-weight:700;padding:0 6px}
-fieldset.card{margin:14px 0 0}
-.sw{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-.sw button{width:36px;height:36px;border-radius:50%;border:2px solid transparent;cursor:pointer;background:var(--c)}
-.sw button[aria-pressed="true"]{border-color:var(--fg);transform:scale(1.1)}
-.emo{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.emo button{width:42px;height:42px;border-radius:12px;border:1px solid var(--edge);background:var(--glass);font-size:22px;cursor:pointer}
-.chk{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}
-.chk input{width:22px;height:22px;accent-color:var(--accent)}
-.st{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--edge);font-size:15px}
+fieldset.card{border:1px solid var(--border);border-radius:var(--r-md);padding:4px 16px 16px;margin:16px 0 0}
+fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;align-items:center;gap:6px}
+.picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px}
+.picks button{height:48px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--card-2);cursor:pointer;display:grid;place-items:center;color:var(--fg)}
+.picks button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:transparent}
+.sw{display:flex;gap:8px;flex-wrap:wrap}
+.sw button{width:48px;height:48px;border-radius:50%;border:3px solid var(--card);outline:2px solid transparent;cursor:pointer;background:var(--c);display:grid;place-items:center;color:#fff}
+.sw button[aria-pressed="true"]{outline-color:var(--fg)}
+.sw button svg{display:none}
+.sw button[aria-pressed="true"] svg{display:block}
+.chk{display:flex;align-items:center;gap:12px;min-height:48px;cursor:pointer}
+.chk input{width:22px;height:22px;accent-color:var(--primary);flex:none}
+.box{border:1px solid var(--border);border-radius:var(--r-md);padding:4px 14px;margin-top:12px}
+.st{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:15px}
 .st:last-child{border:none}
-.st b{font-weight:600}
-.ok{color:var(--ok)} .ko{color:var(--danger)} .mid{color:#f59e0b}
-.qr{background:#fff;border-radius:18px;padding:10px;max-width:300px;margin:12px auto 0}
+.ok{color:#15803D} .ko{color:var(--danger)} .mid{color:#B45309}
+@media (prefers-color-scheme: dark){.ok{color:#4ADE80}.ko{color:#F87171}.mid{color:#FBBF24}}
+.qr{background:#fff;border-radius:var(--r-md);padding:12px;max-width:300px;margin:12px auto 0}
 .qr svg{display:block;width:100%;height:auto}
-.code{font-family:ui-monospace,Consolas,monospace;font-size:22px;letter-spacing:.12em;text-align:center;margin-top:10px}
+.code{font:600 24px ui-monospace,Consolas,monospace;letter-spacing:.12em;text-align:center;margin-top:12px}
+.pos{display:flex;align-items:center;gap:8px}
 
-.toast{position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));transform:translate(-50%,40px);opacity:0;z-index:50;pointer-events:none;
-  padding:12px 18px;border-radius:16px;background:color-mix(in srgb,var(--bg) 70%,transparent);border:1px solid var(--edge);
-  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:var(--shadow);transition:.35s var(--spring);max-width:90vw;text-align:center}
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,24px);opacity:0;z-index:50;pointer-events:none;
+  padding:12px 18px;border-radius:var(--r-sm);background:var(--fg);color:var(--bg);font-weight:600;box-shadow:0 12px 24px -8px rgba(0,0,0,.4);
+  transition:transform 250ms var(--out),opacity 250ms;max-width:calc(100vw - 32px);text-align:center}
 .toast.show{transform:translate(-50%,0);opacity:1}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
   .tile{transform:none!important}
 }
-body.calm .sky i{animation:none}
-body.calm .tile{animation:none}
+body.calm .tile{animation:none;transform:none!important}
 </style>
 </head>
 <body>
-<div class="sky" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-<div class="grain" aria-hidden="true"></div>
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
-  <symbol id="i-set" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
-  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></symbol>
-  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
-  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
-  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol>
-  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7h-4M14 21h.01"/></symbol>
-  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
-  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
-</svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="sliders-horizontal" viewBox="0 0 24 24"><path d="M10 5H3" /> <path d="M12 19H3" /> <path d="M14 3v4" /> <path d="M16 17v4" /> <path d="M21 12h-9" /> <path d="M21 19h-5" /> <path d="M21 5h-7" /> <path d="M8 10v4" /> <path d="M8 12H3" /></symbol><symbol id="x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol><symbol id="smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></symbol><symbol id="monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="trash-2" viewBox="0 0 24 24"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol><symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /> <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" /></symbol><symbol id="qr-code" viewBox="0 0 24 24"><rect width="5" height="5" x="3" y="3" rx="1" /> <rect width="5" height="5" x="16" y="3" rx="1" /> <rect width="5" height="5" x="3" y="16" rx="1" /> <path d="M21 16h-3a2 2 0 0 0-2 2v3" /> <path d="M21 21v.01" /> <path d="M12 7v3a2 2 0 0 1-2 2H7" /> <path d="M3 12h.01" /> <path d="M12 3h.01" /> <path d="M12 16v.01" /> <path d="M16 12h1" /> <path d="M21 12v.01" /> <path d="M12 21v-1" /></symbol><symbol id="sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="download" viewBox="0 0 24 24"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></symbol><symbol id="star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" /></symbol><symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /> <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /> <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /> <path d="m2 2 20 20" /></symbol><symbol id="chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></symbol><symbol id="chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></symbol><symbol id="sprout" viewBox="0 0 24 24"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3" /> <path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4" /> <path d="M5 21h14" /></symbol><symbol id="dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol><symbol id="house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /> <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol><symbol id="speaker" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2" /> <path d="M12 6h.01" /> <circle cx="12" cy="14" r="4" /> <path d="M12 14h.01" /></symbol><symbol id="receipt" viewBox="0 0 24 24"><path d="M12 17V7" /> <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" /></symbol><symbol id="camera" viewBox="0 0 24 24"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" /> <circle cx="12" cy="13" r="3" /></symbol><symbol id="calendar" viewBox="0 0 24 24"><path d="M8 2v3" /> <path d="M16 2v3" /> <rect x="3" y="3" width="18" height="18" rx="2" /> <path d="M3 9h18" /></symbol><symbol id="shopping-cart" viewBox="0 0 24 24"><path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18" /> <path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25" /> <circle cx="18" cy="20" r="2" /> <circle cx="8" cy="20" r="2" /></symbol><symbol id="music" viewBox="0 0 24 24"><path d="M21 16V3a1 1 0 0 0-1.28-.96l-10 2.917a1 1 0 0 0-.72.96V19" /> <circle cx="18" cy="16" r="3" /> <circle cx="6" cy="19" r="3" /></symbol><symbol id="tv" viewBox="0 0 24 24"><path d="m17 2-5 5-5-5" /> <rect width="20" height="15" x="2" y="7" rx="2" /></symbol><symbol id="map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /> <path d="M15 5.764v15" /> <path d="M9 3.236v15" /></symbol><symbol id="car" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" /> <circle cx="7" cy="17" r="2" /> <path d="M9 17h6" /> <circle cx="17" cy="17" r="2" /></symbol><symbol id="sailboat" viewBox="0 0 24 24"><path d="M10 2v15" /> <path d="M7 22a4 4 0 0 1-4-4 1 1 0 0 1 1-1h16a1 1 0 0 1 1 1 4 4 0 0 1-4 4z" /> <path d="M9.159 2.46a1 1 0 0 1 1.521-.193l9.977 8.98A1 1 0 0 1 20 13H4a1 1 0 0 1-.824-1.567z" /></symbol><symbol id="heart" viewBox="0 0 24 24"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" /></symbol><symbol id="book-open" viewBox="0 0 24 24"><path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol><symbol id="chart-column" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" /></symbol><symbol id="mail" viewBox="0 0 24 24"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" /> <rect x="2" y="4" width="20" height="16" rx="2" /></symbol><symbol id="lightbulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /> <path d="M9 18h6" /> <path d="M10 22h4" /></symbol><symbol id="lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /> <path d="M2 12h20" /></symbol><symbol id="image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol><symbol id="settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></symbol></svg>
 
 <div class="wrap" id="app">
   <header>
-    <div class="brand">
-      <h1>MaxiskApp</h1>
-      <p id="hello">Bonjour</p>
-    </div>
-    <button class="ibtn" id="bEdit" aria-pressed="false" aria-label="Modifier les tuiles" title="Modifier"><svg class="i"><use href="#i-edit"/></svg></button>
-    <button class="ibtn" id="bSet" aria-label="Réglages" title="Réglages"><svg class="i"><use href="#i-set"/></svg></button>
+    <div class="hello"><small id="today"></small><h1 id="hello">Bonjour</h1></div>
+    <button class="ibtn" id="bEdit" aria-pressed="false" aria-label="Modifier les tuiles"><svg class="i"><use href="#pencil"/></svg></button>
+    <button class="ibtn" id="bSet" aria-label="Réglages"><svg class="i"><use href="#sliders-horizontal"/></svg></button>
   </header>
 
-  <section id="secFav">
-    <h2><svg class="i" style="width:16px;height:16px"><use href="#i-star"/></svg>Favoris</h2>
-    <div class="grid" id="favGrid"></div>
+  <div class="main">
+  <section id="secFav" aria-labelledby="hFav">
+    <h2 id="hFav">Favoris</h2>
+    <div class="bento" id="favGrid"></div>
     <p class="hint" id="favHint" hidden>Touche le crayon, puis l'étoile d'une appli pour l'épingler ici.</p>
   </section>
-  <section>
-    <h2><svg class="i" style="width:16px;height:16px"><use href="#i-grid"/></svg><span id="allTitle">Les plus utilisées</span></h2>
-    <div class="grid" id="allGrid"></div>
+  <section aria-labelledby="allTitle">
+    <h2 id="allTitle">Toutes les applis</h2>
+    <div class="bento" id="allGrid"></div>
   </section>
-  <p class="hint" id="editHint" hidden>Mode modification : touche une tuile pour la régler. Glisse les favoris pour les ranger.</p>
+  </div>
+  <p class="hint" id="editHint" hidden>Mode modification : touche une tuile pour la régler. Glisse les favoris pour les ranger, ou utilise les flèches dans ses réglages.</p>
 </div>
 
 <!-- Fenêtre : une tuile -->
-<dialog id="dTile"><form class="sheet" method="dialog" id="fTile" novalidate>
-  <div class="top"><h3 id="tTitle">Appli</h3><button class="ibtn" value="cancel" formnovalidate aria-label="Fermer"><svg class="i"><use href="#i-x"/></svg></button></div>
+<dialog id="dTile" aria-labelledby="tTitle"><form class="sheet" method="dialog" id="fTile" novalidate>
+  <div class="top"><h3 id="tTitle">Appli</h3><button class="ibtn" value="cancel" formnovalidate aria-label="Fermer"><svg class="i"><use href="#x"/></svg></button></div>
   <label class="f"><span>Nom</span><input class="in" name="name" required maxlength="24" autocomplete="off"></label>
-  <label class="f"><span>Icône : un émoji, ou l'adresse d'une image</span><input class="in" name="icon" maxlength="300" autocomplete="off"></label>
-  <div class="emo" id="emo"></div>
-  <label class="f"><span>Couleur</span></label><div class="sw" id="sw"></div>
+  <div class="f" style="margin-top:16px"><span class="lab" id="lPic">Pictogramme</span><div class="picks" id="picks" role="group" aria-labelledby="lPic"></div></div>
+  <label class="f"><span>Ou l'adresse d'une image (facultatif)</span><input class="in" name="img" type="url" placeholder="https://…/icone.png" autocapitalize="off" spellcheck="false"></label>
+  <div class="f" style="margin-top:16px"><span class="lab" id="lCol">Couleur</span><div class="sw" id="sw" role="group" aria-labelledby="lCol"></div></div>
 
-  <fieldset class="card"><legend>📱 Sur Android</legend>
+  <label class="chk" style="margin-top:12px"><input type="checkbox" name="fav"><span>Dans les favoris</span></label>
+  <div class="pos" id="posRow"><span class="small" style="margin:0;flex:1">Place dans les favoris : <b id="posTxt"></b></span>
+    <button class="ibtn" type="button" id="bLeft" aria-label="Avancer dans les favoris"><svg class="i"><use href="#chevron-left"/></svg></button>
+    <button class="ibtn" type="button" id="bRight" aria-label="Reculer dans les favoris"><svg class="i"><use href="#chevron-right"/></svg></button></div>
+
+  <fieldset class="card"><legend><svg class="i" aria-hidden="true"><use href="#smartphone"/></svg>Sur Android</legend>
     <label class="f"><span>Ouvrir</span><select class="in" name="aMode">
       <option value="app">Une appli installée</option><option value="url">Un lien web</option><option value="hide">Rien (masquer)</option></select></label>
     <div data-show="aMode=app">
-      <label class="f"><span>Nom du paquet</span><input class="in" name="aPkg" placeholder="ex : io.homeassistant.companion.android" autocapitalize="off" spellcheck="false"></label>
+      <label class="f"><span>Nom du paquet</span><input class="in" name="aPkg" placeholder="io.homeassistant.companion.android" autocapitalize="off" spellcheck="false"></label>
       <p class="small">Dans l'adresse Play Store de l'appli, c'est ce qui suit « id= ».</p>
-      <label class="f"><span>Lien direct (facultatif)</span><input class="in" name="aDeep" placeholder="ex : homeassistant://navigate/" autocapitalize="off" spellcheck="false"></label>
-      <p class="small">Si l'appli en a un, il l'ouvre plus sûrement. Sinon, Chrome peut passer par la fiche Play Store (bouton « Ouvrir »).</p>
+      <label class="f"><span>Lien direct (facultatif)</span><input class="in" name="aDeep" placeholder="homeassistant://navigate/" autocapitalize="off" spellcheck="false"></label>
+      <p class="small">Indispensable pour que Chrome ouvre l'appli. Sans lui, Chrome affiche la fiche Play Store.</p>
     </div>
     <div data-show="aMode=url"><label class="f"><span>Adresse</span><input class="in" name="aUrl" type="url" placeholder="https://…" autocapitalize="off" spellcheck="false"></label></div>
   </fieldset>
 
-  <fieldset class="card"><legend>💻 Sur PC</legend>
+  <fieldset class="card"><legend><svg class="i" aria-hidden="true"><use href="#monitor"/></svg>Sur PC</legend>
     <label class="f"><span>Ouvrir</span><select class="in" name="pMode">
       <option value="url">Un lien</option><option value="hide">Rien (masquer)</option></select></label>
-    <div data-show="pMode=url"><label class="f"><span>Adresse</span><input class="in" name="pUrl" placeholder="https://… ou un lien d'appli" autocapitalize="off" spellcheck="false"></label></div>
+    <div data-show="pMode=url"><label class="f"><span>Adresse</span><input class="in" name="pUrl" placeholder="https://…" autocapitalize="off" spellcheck="false"></label></div>
   </fieldset>
 
   <label class="chk" style="margin-top:12px"><input type="checkbox" name="hidden"><span>Masquer cette tuile</span></label>
   <div class="btns">
-    <button class="btn danger" type="button" id="bDel">Supprimer</button>
+    <button class="btn danger" type="button" id="bDel"><svg class="i" aria-hidden="true"><use href="#trash-2"/></svg>Supprimer</button>
     <span class="grow"></span>
-    <button class="btn pri" value="ok" id="bSaveTile"><svg class="i"><use href="#i-check"/></svg>Enregistrer</button>
+    <button class="btn pri" value="ok"><svg class="i" aria-hidden="true"><use href="#check"/></svg>Enregistrer</button>
   </div>
 </form></dialog>
 
 <!-- Fenêtre : réglages -->
-<dialog id="dSet"><div class="sheet">
-  <div class="top"><h3>Réglages</h3><button class="ibtn" data-close aria-label="Fermer"><svg class="i"><use href="#i-x"/></svg></button></div>
+<dialog id="dSet" aria-labelledby="sTitle"><div class="sheet">
+  <div class="top"><h3 id="sTitle">Réglages</h3><button class="ibtn" data-close aria-label="Fermer"><svg class="i"><use href="#x"/></svg></button></div>
+  <label class="f"><span>Ton prénom (pour le bonjour)</span><input class="in" id="sName" maxlength="20" autocomplete="given-name"></label>
 
-  <label class="f"><span>Ton prénom (pour le bonjour)</span><input class="in" id="sName" maxlength="20" autocomplete="off"></label>
-
-  <h4><svg class="i"><use href="#i-key"/></svg>Jeton GitHub commun</h4>
+  <h4><svg class="i" aria-hidden="true"><use href="#key-round"/></svg>Jeton GitHub commun</h4>
   <p class="small">Saisi une fois ici, il sert à Budget et à Jungle. Chaque appli garde sa propre phrase secrète.</p>
   <label class="f"><span>Jeton (github_pat_…)</span><input class="in" id="sPat" type="password" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
   <label class="chk"><input type="checkbox" id="sShow"><span>Afficher le jeton</span></label>
-  <div class="card" id="patState"></div>
+  <div class="box" id="patState"></div>
   <div class="btns"><button class="btn pri" id="bPat">Enregistrer et appliquer partout</button></div>
 
-  <h4><svg class="i"><use href="#i-qr"/></svg>Configurer un autre téléphone</h4>
+  <h4><svg class="i" aria-hidden="true"><use href="#qr-code"/></svg>Configurer un autre téléphone</h4>
   <p class="small">Le QR contient le jeton et les phrases secrètes. Il est chiffré : le code s'affiche ici, à donner de vive voix.</p>
   <label class="chk"><input type="checkbox" id="sTiles"><span>Inclure mes tuiles (elle pourra les ranger à sa façon)</span></label>
-  <div class="btns"><button class="btn" id="bQr"><svg class="i"><use href="#i-qr"/></svg>Afficher le QR code</button></div>
+  <div class="btns" style="margin-top:8px"><button class="btn" id="bQr"><svg class="i" aria-hidden="true"><use href="#qr-code"/></svg>Afficher le QR code</button></div>
   <div id="qrOut"></div>
 
-  <h4>✨ Effets</h4>
-  <label class="chk"><input type="checkbox" id="sTilt"><span>Inclinaison du téléphone (consomme un peu de batterie)</span></label>
+  <h4><svg class="i" aria-hidden="true"><use href="#sparkles"/></svg>Effets</h4>
+  <label class="chk"><input type="checkbox" id="sTilt"><span>Inclinaison du téléphone (un peu de batterie)</span></label>
   <label class="chk"><input type="checkbox" id="sCalm"><span>Calmer les animations</span></label>
   <label class="chk"><input type="checkbox" id="sTab"><span>Sur PC, ouvrir dans un nouvel onglet</span></label>
   <label class="f"><span>Appareil</span><select class="in" id="sPlat"><option value="auto">Détection automatique</option><option value="android">Toujours Android</option><option value="pc">Toujours PC</option></select></label>
 
-  <h4><svg class="i"><use href="#i-box"/></svg>Sauvegarde des tuiles</h4>
+  <h4><svg class="i" aria-hidden="true"><use href="#download"/></svg>Sauvegarde des tuiles</h4>
   <p class="small">Fichier sans jeton ni phrase secrète.</p>
-  <div class="btns">
+  <div class="btns" style="margin-top:8px">
     <button class="btn" id="bExp">Exporter</button>
     <label class="btn">Importer<input type="file" id="fImp" accept="application/json,.json" hidden></label>
     <button class="btn" id="bUse">Remettre l'usage à zéro</button>
   </div>
-  <p class="small" style="margin-top:18px">Version <span id="ver"></span></p>
+  <p class="small" style="margin-top:20px">Version <span id="ver"></span> · Pictos Lucide (licence ISC)</p>
 </div></dialog>
 
 <!-- Fenêtre : import par QR -->
-<dialog id="dIn"><form class="sheet" method="dialog" id="fIn">
-  <h3>Configurer ce téléphone</h3>
+<dialog id="dIn" aria-labelledby="iTitle"><form class="sheet" method="dialog" id="fIn">
+  <h3 id="iTitle">Configurer ce téléphone</h3>
   <p class="small">Entre le code affiché sur l'autre appareil.</p>
-  <label class="f"><span>Code</span><input class="in" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-family:ui-monospace,monospace;letter-spacing:.1em"></label>
-  <p class="small ko" id="inErr" hidden>Code incorrect.</p>
+  <label class="f"><span>Code</span><input class="in" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-family:ui-monospace,monospace;letter-spacing:.1em" aria-describedby="inErr"></label>
+  <p class="small ko" id="inErr" role="alert" hidden>Code incorrect. Vérifie-le et réessaie.</p>
   <div class="btns"><button class="btn" value="cancel" formnovalidate>Annuler</button><span class="grow"></span><button class="btn pri" value="ok" id="bIn">Valider</button></div>
 </form></dialog>
 
@@ -293,7 +295,7 @@ body.calm .tile{animation:none}
 <script src="qrcode.js"></script>
 <script>
 "use strict";
-const VERSION = "1.0.1";
+const VERSION = "2.0.0";
 
 /* ═════ Stockage ═════
    Toutes les applis sont sur miamax6.github.io : même origine, donc même localStorage.
@@ -314,31 +316,51 @@ const APPS = [
   { key:"jg.cfg", name:"Jungle",  path:"jungle/datas.json" }
 ];
 const OWNER = "miamax6", DATA_REPO = "miamax6";
-const COLORS = ["#8b5cf6","#06b6d4","#22c55e","#f59e0b","#f43f5e","#3b82f6","#ec4899","#14b8a6","#64748b"];
-const EMOJIS = ["💶","🪴","🎲","🏠","🔊","💸","📷","🚣","📅","🛒","🎵","📺","🗺️","⚙️","💡","🔒"];
+/* Couleurs de tuile : texte blanc ≥ 4,5:1 sur chacune */
+const COLORS = ["#2563EB","#7C3AED","#DB2777","#DC2626","#C2410C","#B45309","#15803D","#0F766E","#0E7490","#334155"];
+const PICTOS = [
+  ["wallet","Budget"],["sprout","Plantes"],["dices","Jeux"],["house","Maison"],["speaker","Son"],["receipt","Dépenses"],
+  ["camera","Photo"],["calendar","Agenda"],["shopping-cart","Courses"],["music","Musique"],["tv","Télé"],["map","Carte"],
+  ["car","Voiture"],["sailboat","Voyage"],["heart","Santé"],["book-open","Lecture"],["chart-column","Stats"],["mail","Mail"],
+  ["lightbulb","Lumière"],["lock","Sécurité"],["globe","Web"],["image","Images"],["settings","Réglages"],["layout-grid","Appli"]
+];
+const PIC = new Set(PICTOS.map(p => p[0]));
 const PAGES = "https://miamax6.github.io/";
 
 const DEFAULT_TILES = () => [
-  { id:"budget",  name:"Budget",  icon:PAGES+"mbauxdijsekta/icon-192.png", color:"#f43f5e",
+  { id:"budget",  name:"Budget",  icon:"wallet", color:"#DC2626",
     android:{ mode:"url", url:PAGES+"mbauxdijsekta/" }, pc:{ mode:"url", url:PAGES+"mbauxdijsekta/" } },
-  { id:"jungle",  name:"Jungle",  icon:PAGES+"your-tiny-jungle/icons/icon-192.png", color:"#22c55e",
+  { id:"jungle",  name:"Jungle",  icon:"sprout", color:"#15803D",
     android:{ mode:"url", url:PAGES+"your-tiny-jungle/" }, pc:{ mode:"url", url:PAGES+"your-tiny-jungle/" } },
-  { id:"yam",     name:"Yam's",   icon:"🎲", color:"#f59e0b",
+  { id:"yam",     name:"Yam's",   icon:"dices", color:"#B45309",
     android:{ mode:"url", url:PAGES+"yam-iamax/" }, pc:{ mode:"url", url:PAGES+"yam-iamax/" } },
-  { id:"ha",      name:"Home Assistant", icon:"🏠", color:"#06b6d4",
+  { id:"ha",      name:"Home Assistant", icon:"house", color:"#0E7490",
     android:{ mode:"app", pkg:"io.homeassistant.companion.android", deep:"homeassistant://navigate/" }, pc:{ mode:"url", url:"" } },
-  { id:"musiccast", name:"MusicCast", icon:"🔊", color:"#3b82f6",
+  { id:"musiccast", name:"MusicCast", icon:"speaker", color:"#7C3AED",
     android:{ mode:"app", pkg:"com.yamaha.av.musiccastcontroller", deep:"" }, pc:{ mode:"url", url:"" } },
-  { id:"tricount", name:"Tricount", icon:"💸", color:"#14b8a6",
+  { id:"tricount", name:"Tricount", icon:"receipt", color:"#0F766E",
     android:{ mode:"app", pkg:"com.tribab.tricount.android", deep:"https://tricount.com/link/tricounts" }, pc:{ mode:"url", url:"https://tricount.com/" } }
 ];
 
 let cfg = LS.json(K.cfg, null);
-if (!cfg || !Array.isArray(cfg.tiles)) cfg = { v:1, tiles:DEFAULT_TILES(), favs:["budget","ha"], prefs:{} };
+if (!cfg || !Array.isArray(cfg.tiles)) cfg = { v:2, tiles:DEFAULT_TILES(), favs:["budget","ha","jungle"], prefs:{} };
 cfg.prefs = Object.assign({ tilt:true, calm:false, newTab:true, plat:"auto", name:"" }, cfg.prefs || {});
 cfg.favs = (cfg.favs || []).filter(id => cfg.tiles.some(t => t.id === id));
-/* Migration 1.0.1 : lien direct Tricount */
-{ const tc = cfg.tiles.find(t => t.id === "tricount"); if (tc && tc.android && tc.android.mode === "app" && !tc.android.deep){ tc.android.deep = "https://tricount.com/link/tricounts"; LS.put(K.cfg, cfg); } }
+/* Migration v1 → v2 : émojis → pictos, anciennes couleurs → palette contrastée, lien direct Tricount */
+if ((cfg.v || 1) < 2){
+  const EMO = { "💶":"wallet","🪴":"sprout","🎲":"dices","🏠":"house","🔊":"speaker","💸":"receipt","📷":"camera","🚣":"sailboat","📅":"calendar","🛒":"shopping-cart","🎵":"music","📺":"tv","🗺️":"map","⚙️":"settings","💡":"lightbulb","🔒":"lock" };
+  const DEF = { budget:"wallet", jungle:"sprout", yam:"dices", ha:"house", musiccast:"speaker", tricount:"receipt" };
+  const COL = { "#f43f5e":"#DC2626","#22c55e":"#15803D","#f59e0b":"#B45309","#06b6d4":"#0E7490","#3b82f6":"#2563EB","#14b8a6":"#0F766E","#8b5cf6":"#7C3AED","#ec4899":"#DB2777","#64748b":"#334155" };
+  cfg.tiles.forEach(t => {
+    const ic = (t.icon || "").trim();
+    if (EMO[ic]) t.icon = EMO[ic];
+    else if (DEF[t.id] && (!ic || /miamax6\.github\.io/.test(ic))) t.icon = DEF[t.id];
+    else if (!PIC.has(ic) && !/^https?:/i.test(ic)) t.icon = "layout-grid";
+    if (COL[(t.color || "").toLowerCase()]) t.color = COL[t.color.toLowerCase()];
+    if (t.id === "tricount" && t.android?.mode === "app" && !t.android.deep) t.android.deep = "https://tricount.com/link/tricounts";
+  });
+  cfg.v = 2; LS.put(K.cfg, cfg);
+}
 let usage = LS.json(K.use, {});
 const save = () => LS.put(K.cfg, cfg);
 
@@ -347,49 +369,54 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 const uid = () => Math.random().toString(36).slice(2, 9);
 const isAndroid = () => cfg.prefs.plat === "android" || (cfg.prefs.plat === "auto" && /Android/i.test(navigator.userAgent));
-const isImg = s => /^(https?:|data:image|\.{0,2}\/)/i.test(String(s || "").trim());
+const isImg = s => /^https?:\/\//i.test(String(s || "").trim());
+const svg = (id, cls = "i") => `<svg class="${cls}" aria-hidden="true"><use href="#${id}"/></svg>`;
 let toastT;
 function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2800); }
 
 /* Lien Android : intent:// (Chrome) avec repli vers la fiche Play Store.
-   Avec un lien direct (schéma propre à l'appli), on le passe dans l'intent : plus fiable. */
+   Chrome n'ouvre que les activités BROWSABLE : un lien direct (schéma de l'appli ou https géré par l'appli) est nécessaire. */
 function intentFor(a){
   const pkg = (a.pkg || "").trim(); if (!pkg) return "";
   const fb = encodeURIComponent("https://play.google.com/store/apps/details?id=" + pkg);
-  const deep = (a.deep || "").trim(), m = deep.match(/^([a-z][a-z0-9+.-]*):\/\/(.*)$/i);
+  const m = (a.deep || "").trim().match(/^([a-z][a-z0-9+.-]*):\/\/(.*)$/i);
   if (m) return `intent://${m[2]}#Intent;scheme=${m[1]};package=${pkg};S.browser_fallback_url=${fb};end`;
   return `intent://#Intent;package=${pkg};S.browser_fallback_url=${fb};end`;
 }
-/* Ce qu'ouvre une tuile sur cet appareil : { href } / { todo:true } / { off:true } */
+/* Ce qu'ouvre une tuile sur cet appareil */
 function target(t){
   if (isAndroid()){
     const a = t.android || {};
     if (a.mode === "hide") return { off:true };
-    if (a.mode === "app") return a.pkg ? { href:intentFor(a) } : { todo:true };
-    return a.url ? { href:a.url } : { todo:true };
+    if (a.mode === "app") return a.pkg ? { href:intentFor(a), sub:"Appli" } : { todo:true };
+    return a.url ? { href:a.url, sub:"Web" } : { todo:true };
   }
   const p = t.pc || {};
   if (p.mode === "hide") return { off:true };
-  return p.url ? { href:p.url, blank:cfg.prefs.newTab } : { todo:true };
+  return p.url ? { href:p.url, blank:cfg.prefs.newTab, sub:"Web" } : { todo:true };
 }
 
 /* ═════ Rendu ═════ */
 let editing = false;
-function iconHtml(t){
+function pic(t, cls){
   const ic = (t.icon || "").trim();
-  if (isImg(ic)) return `<span class="ico" style="--c:${esc(t.color)}"><img src="${esc(ic)}" alt="" loading="lazy" onerror="this.replaceWith(document.createTextNode('${esc((t.name||'?')[0])}'))"></span>`;
-  return `<span class="ico" style="--c:${esc(t.color)}" aria-hidden="true">${esc(ic || (t.name || "?")[0])}</span>`;
+  if (isImg(ic)) return `<img class="${cls}" src="${esc(ic)}" alt="" loading="lazy">`;
+  return svg(PIC.has(ic) ? ic : "layout-grid", cls);
 }
 function tileHtml(t, i, fav){
-  const tg = target(t), cls = ["tile"];
+  const tg = target(t), isFav = cfg.favs.includes(t.id);
+  const span = fav ? (i === 0 ? " span-big" : " span-wide") : "";
+  const cls = ["tile", fav ? "fav" : "app"];
   if (tg.todo) cls.push("todo");
   if (tg.off || t.hidden) cls.push("off");
-  const isFav = cfg.favs.includes(t.id);
   const href = !editing && tg.href ? ` href="${esc(tg.href)}"${tg.blank ? ' target="_blank" rel="noopener"' : ""}` : "";
-  const tag = tg.todo ? `<span class="tag">à régler</span>` : (editing && (tg.off || t.hidden) ? `<span class="tag">masquée</span>` : "");
-  return `<a class="${cls.join(" ")}" data-id="${esc(t.id)}"${fav ? " data-fav" : ""}${href} style="--i:${i}" role="${href ? "link" : "button"}" tabindex="0" aria-label="${esc(t.name)}${tg.todo ? " (à régler)" : ""}">
-    ${iconHtml(t)}<span class="name">${esc(t.name)}</span>${tag}
-    <span class="badge${isFav ? " on" : ""}" data-star role="button" aria-label="${isFav ? "Retirer des favoris" : "Ajouter aux favoris"}"><svg class="i" style="width:18px;height:18px"><use href="#i-star"/></svg></span></a>`;
+  const st = tg.todo ? `<span class="state">${svg("plus","i")}À régler</span>` : (editing && (tg.off || t.hidden) ? `<span class="state">${svg("eye-off","i")}Masquée</span>` : "");
+  const label = esc(t.name) + (tg.todo ? ", à régler" : "") + (editing ? ", modifier" : "");
+  const badge = `<span class="badge${isFav ? " on" : ""}" data-star role="button" tabindex="0" aria-pressed="${isFav}" aria-label="${isFav ? "Retirer " : "Épingler "}${esc(t.name)}">${svg("star","i")}</span>`;
+  const body = fav
+    ? `${pic(t, "pic")}${svg(PIC.has(t.icon) ? t.icon : "layout-grid", "wm")}<span class="txt"><span class="nm">${esc(t.name)}</span><span class="sub">${tg.todo ? "À régler" : (tg.sub || "")}</span></span>`
+    : `<span class="chip">${pic(t, "i")}</span><span class="nm">${esc(t.name)}</span>`;
+  return `<a class="${cls.join(" ")}${span}" data-id="${esc(t.id)}"${fav ? " data-fav" : ""}${href} style="--i:${i};--c:${esc(t.color || COLORS[0])}" ${href ? "" : 'role="button" tabindex="0"'} aria-label="${label}">${badge}${body}${fav && tg.todo ? "" : st}</a>`;
 }
 function visible(t){ if (editing) return true; const tg = target(t); return !(tg.off || t.hidden); }
 function render(){
@@ -401,13 +428,15 @@ function render(){
     .sort((a, b) => (usage[b.id]?.n || 0) - (usage[a.id]?.n || 0) || (usage[b.id]?.at || 0) - (usage[a.id]?.at || 0) || a.name.localeCompare(b.name, "fr"));
   $("#favGrid").innerHTML = favs.map((t, i) => tileHtml(t, i, true)).join("");
   $("#allGrid").innerHTML = rest.map((t, i) => tileHtml(t, i + favs.length, false)).join("")
-    + (editing ? `<button class="tile add" id="bAdd" style="--i:${rest.length + favs.length}"><span class="ico"><svg class="i"><use href="#i-plus"/></svg></span><span class="name">Ajouter</span></button>` : "");
+    + (editing ? `<button class="tile app add" id="bAdd" style="--i:${rest.length + favs.length}" aria-label="Ajouter une appli"><span class="chip">${svg("plus")}</span><span class="nm">Ajouter</span></button>` : "");
   $("#favHint").hidden = favs.length > 0;
   $("#allTitle").textContent = Object.keys(usage).length ? "Les plus utilisées" : "Toutes les applis";
   $("#editHint").hidden = !editing;
   $("#bEdit").setAttribute("aria-pressed", editing);
-  const h = new Date().getHours(), n = (cfg.prefs.name || "").trim();
-  $("#hello").textContent = (h >= 18 || h < 5 ? "Bonsoir" : "Bonjour") + (n ? " " + n : "") + (isAndroid() ? "" : " · PC");
+  const d = new Date(), h = d.getHours(), n = (cfg.prefs.name || "").trim();
+  const ds = d.toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" });
+  $("#today").textContent = ds.charAt(0).toUpperCase() + ds.slice(1) + (isAndroid() ? "" : " · PC");
+  $("#hello").textContent = (h >= 18 || h < 5 ? "Bonsoir" : "Bonjour") + (n ? " " + n : "");
 }
 
 /* ═════ Interactions tuiles ═════ */
@@ -419,9 +448,9 @@ function toggleFav(id){
 }
 let longT = null, longFired = false, dragged = false;
 document.addEventListener("pointerdown", e => {
-  const t = e.target.closest(".tile"); if (!t || t.classList.contains("add")) return;
+  const t = e.target.closest(".tile"); if (!t || t.classList.contains("add") || e.target.closest("[data-star]")) return;
   t.classList.add("press"); longFired = false;
-  if (!editing){ clearTimeout(longT); longT = setTimeout(() => { longFired = true; t.classList.remove("press"); if (navigator.vibrate) navigator.vibrate(12); openTile(t.dataset.id); }, 550); }
+  if (!editing){ clearTimeout(longT); longT = setTimeout(() => { longFired = true; t.classList.remove("press"); if (navigator.vibrate) navigator.vibrate(10); openTile(t.dataset.id); }, 550); }
 });
 const unpress = () => { clearTimeout(longT); document.querySelectorAll(".tile.press").forEach(x => x.classList.remove("press")); };
 ["pointerup","pointercancel","pointerleave"].forEach(ev => document.addEventListener(ev, unpress, true));
@@ -439,16 +468,18 @@ document.addEventListener("click", e => {
   if (tg.blank) setTimeout(render, 300);
 });
 document.addEventListener("keydown", e => {
-  if ((e.key === "Enter" || e.key === " ") && e.target.matches?.(".tile:not([href])")){ e.preventDefault(); e.target.click(); }
+  if (e.key !== "Enter" && e.key !== " ") return;
+  if (e.target.matches?.("[data-star]")){ e.preventDefault(); toggleFav(e.target.closest(".tile").dataset.id); return; }
+  if (e.target.matches?.(".tile:not([href])")){ e.preventDefault(); e.target.click(); }
 });
 
-/* Reflet + relief au survol (souris) */
+/* Relief + reflet au survol (souris) */
 document.addEventListener("pointermove", e => {
   if (e.pointerType !== "mouse" || cfg.prefs.calm) return;
   const t = e.target.closest(".tile"); if (!t) return;
   const r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-  t.style.setProperty("--ry", ((x - .5) * 16).toFixed(1) + "deg");
-  t.style.setProperty("--rx", ((.5 - y) * 16).toFixed(1) + "deg");
+  t.style.setProperty("--ry", ((x - .5) * 10).toFixed(1) + "deg");
+  t.style.setProperty("--rx", ((.5 - y) * 10).toFixed(1) + "deg");
   t.style.setProperty("--mx", (x * 100).toFixed(0) + "%");
   t.style.setProperty("--my", (y * 100).toFixed(0) + "%");
 }, { passive:true });
@@ -457,26 +488,27 @@ document.addEventListener("pointerout", e => {
   ["--rx","--ry","--mx","--my"].forEach(p => t.style.removeProperty(p));
 });
 
-/* Inclinaison du téléphone : une seule variable globale, mise à jour au rythme de l'écran */
+/* Inclinaison du téléphone : une variable globale, mise à jour au rythme de l'écran */
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-let tiltOn = false, tiltRaf = 0, tg = { x:0, y:0 }, cur = { x:0, y:0 }, base = null;
+let tiltOn = false, tiltRaf = 0, tgt = { x:0, y:0 }, cur = { x:0, y:0 }, base = null;
 function onOrient(e){
   if (e.beta == null || e.gamma == null) return;
-  if (!base) base = { b:e.beta, g:e.gamma };          // position de départ = neutre
-  tg.x = Math.max(-1, Math.min(1, (e.gamma - base.g) / 25));
-  tg.y = Math.max(-1, Math.min(1, (e.beta - base.b) / 25));
+  if (!base) base = { b:e.beta, g:e.gamma };            // position de départ = neutre
+  tgt.x = Math.max(-1, Math.min(1, (e.gamma - base.g) / 25));
+  tgt.y = Math.max(-1, Math.min(1, (e.beta - base.b) / 25));
   if (!tiltRaf) tiltRaf = requestAnimationFrame(stepTilt);
 }
 function stepTilt(){
-  cur.x += (tg.x - cur.x) * .15; cur.y += (tg.y - cur.y) * .15;
+  cur.x += (tgt.x - cur.x) * .15; cur.y += (tgt.y - cur.y) * .15;
   const root = document.documentElement.style;
-  root.setProperty("--gx", (cur.x * 9).toFixed(2));
-  root.setProperty("--gy", (-cur.y * 9).toFixed(2));
-  document.querySelectorAll(".tile").forEach(t => { if (!t.style.getPropertyValue("--mx") || t.dataset.tilt){ t.dataset.tilt = 1; t.style.setProperty("--mx", (50 + cur.x * 45).toFixed(0) + "%"); t.style.setProperty("--my", (25 + cur.y * 40).toFixed(0) + "%"); } });
-  tiltRaf = (Math.abs(tg.x - cur.x) + Math.abs(tg.y - cur.y) > .002) ? requestAnimationFrame(stepTilt) : 0;
+  root.setProperty("--gx", (cur.x * 7).toFixed(2));
+  root.setProperty("--gy", (-cur.y * 7).toFixed(2));
+  document.querySelectorAll(".fav").forEach(t => { t.style.setProperty("--mx", (50 + cur.x * 45).toFixed(0) + "%"); t.style.setProperty("--my", (20 + cur.y * 40).toFixed(0) + "%"); });
+  tiltRaf = (Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) > .002) ? requestAnimationFrame(stepTilt) : 0;
 }
 function setTilt(){
   const want = cfg.prefs.tilt && !cfg.prefs.calm && !reduced.matches && isAndroid() && !document.hidden && "DeviceOrientationEvent" in window;
+  document.body.classList.toggle("tilting", want);
   if (want === tiltOn) return;
   tiltOn = want; base = null;
   if (want) addEventListener("deviceorientation", onOrient, { passive:true });
@@ -485,7 +517,7 @@ function setTilt(){
 document.addEventListener("visibilitychange", () => { setTilt(); if (!document.hidden){ base = null; render(); } });
 reduced.addEventListener?.("change", setTilt);
 
-/* Glisser-déposer des favoris (mode modification) */
+/* Glisser-déposer des favoris (mode modification). Alternative sans glisser : flèches dans les réglages de la tuile. */
 (function(){
   let el = null, sx = 0, sy = 0, moved = false;
   const grid = $("#favGrid");
@@ -503,13 +535,10 @@ reduced.addEventListener?.("change", setTilt);
     const over = document.elementFromPoint(e.clientX, e.clientY)?.closest("#favGrid .tile");
     el.style.pointerEvents = "";
     if (!over || over === el) return;
-    const tiles = [...grid.children], before = new Map(tiles.map(n => [n, n.getBoundingClientRect()]));
-    const a = tiles.indexOf(el), b = tiles.indexOf(over);
+    const tiles = [...grid.children], a = tiles.indexOf(el), b = tiles.indexOf(over);
     grid.insertBefore(el, a < b ? over.nextSibling : over);
-    tiles.forEach(n => {                                   // animation FLIP
-      if (n === el) return;
-      const o = before.get(n), r = n.getBoundingClientRect(), dx = o.left - r.left, dy = o.top - r.top;
-      if (dx || dy) n.animate([{ translate:`${dx}px ${dy}px` }, { translate:"0 0" }], { duration:260, easing:"cubic-bezier(.22,1,.36,1)" });
+    [...grid.children].forEach((n, i) => {                // la première case reste la grande
+      n.classList.toggle("span-big", i === 0); n.classList.toggle("span-wide", i > 0);
     });
   });
   const end = () => {
@@ -517,45 +546,62 @@ reduced.addEventListener?.("change", setTilt);
     if (moved){
       cfg.favs = [...grid.children].map(n => n.dataset.id).filter(Boolean)
         .concat(cfg.favs.filter(id => !grid.querySelector(`[data-id="${CSS.escape(id)}"]`)));
-      save(); dragged = true; setTimeout(() => { dragged = false; }, 50);
+      save(); dragged = true; setTimeout(() => { dragged = false; }, 50); render();
     }
-    el.classList.remove("dragging"); el = null;
+    if (el) el.classList.remove("dragging"); el = null;
   };
   grid.addEventListener("pointerup", end); grid.addEventListener("pointercancel", end);
 })();
 
 /* ═════ Éditeur de tuile ═════ */
 const dTile = $("#dTile"), fT = $("#fTile");
-let editId = null, editColor = COLORS[0];
-$("#emo").innerHTML = EMOJIS.map(e => `<button type="button" data-e="${e}">${e}</button>`).join("");
-$("#emo").addEventListener("click", e => { const b = e.target.closest("[data-e]"); if (b) fT.icon.value = b.dataset.e; });
-function paintSw(){ $("#sw").innerHTML = COLORS.map(c => `<button type="button" style="--c:${c}" data-c="${c}" aria-label="Couleur ${c}" aria-pressed="${c === editColor}"></button>`).join(""); }
+let editId = null, editColor = COLORS[0], editPic = "layout-grid";
+function paintPicks(){
+  $("#picks").innerHTML = PICTOS.map(([id, lab]) => `<button type="button" data-p="${id}" aria-label="${lab}" aria-pressed="${id === editPic}" title="${lab}">${svg(id)}</button>`).join("");
+}
+$("#picks").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (b){ editPic = b.dataset.p; fT.img.value = ""; paintPicks(); } });
+function paintSw(){ $("#sw").innerHTML = COLORS.map((c, i) => `<button type="button" style="--c:${c}" data-c="${c}" aria-label="Couleur ${i + 1}" aria-pressed="${c === editColor}">${svg("check")}</button>`).join(""); }
 $("#sw").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (b){ editColor = b.dataset.c; paintSw(); } });
 function syncShow(){ fT.querySelectorAll("[data-show]").forEach(d => { const [k, v] = d.dataset.show.split("="); d.hidden = fT[k].value !== v; }); }
 fT.aMode.addEventListener("change", syncShow); fT.pMode.addEventListener("change", syncShow);
+function paintPos(){
+  const i = cfg.favs.indexOf(editId), on = editId && i >= 0;
+  $("#posRow").hidden = !on;
+  if (on){ $("#posTxt").textContent = `${i + 1} sur ${cfg.favs.length}`; $("#bLeft").disabled = i === 0; $("#bRight").disabled = i === cfg.favs.length - 1; }
+}
+function moveFav(d){
+  const i = cfg.favs.indexOf(editId), j = i + d; if (i < 0 || j < 0 || j >= cfg.favs.length) return;
+  [cfg.favs[i], cfg.favs[j]] = [cfg.favs[j], cfg.favs[i]]; save(); render(); paintPos();
+}
+$("#bLeft").addEventListener("click", () => moveFav(-1)); $("#bRight").addEventListener("click", () => moveFav(1));
 function openTile(id){
-  const t = id ? cfg.tiles.find(x => x.id === id) : { name:"", icon:"", color:COLORS[(cfg.tiles.length) % COLORS.length], android:{ mode:"app" }, pc:{ mode:"url" } };
+  const t = id ? cfg.tiles.find(x => x.id === id) : { name:"", icon:"layout-grid", color:COLORS[cfg.tiles.length % COLORS.length], android:{ mode:"app" }, pc:{ mode:"url" } };
   if (!t) return;
   editId = id; editColor = t.color || COLORS[0];
-  $("#tTitle").textContent = id ? t.name : "Nouvelle tuile";
-  fT.name.value = t.name || ""; fT.icon.value = t.icon || "";
+  const ic = (t.icon || "").trim(); editPic = PIC.has(ic) ? ic : "layout-grid";
+  $("#tTitle").textContent = id ? t.name : "Nouvelle appli";
+  fT.name.value = t.name || ""; fT.img.value = isImg(ic) ? ic : "";
+  fT.fav.checked = !!id && cfg.favs.includes(id);
   fT.aMode.value = t.android?.mode || "url"; fT.aPkg.value = t.android?.pkg || ""; fT.aDeep.value = t.android?.deep || ""; fT.aUrl.value = t.android?.url || "";
   fT.pMode.value = t.pc?.mode || "url"; fT.pUrl.value = t.pc?.url || "";
   fT.hidden.checked = !!t.hidden;
   $("#bDel").hidden = !id;
-  paintSw(); syncShow(); dTile.showModal();
+  paintPicks(); paintSw(); syncShow(); paintPos(); dTile.showModal();
 }
-fT.addEventListener("submit", e => { if (e.submitter?.value === "ok" && !fT.name.value.trim()){ e.preventDefault(); toast("Il manque le nom"); fT.name.focus(); } });
+fT.addEventListener("submit", e => { if (e.submitter?.value === "ok" && !fT.name.value.trim()){ e.preventDefault(); toast("Indique un nom"); fT.name.focus(); } });
 dTile.addEventListener("close", () => {
   if (dTile.returnValue !== "ok") return;
-  const name = fT.name.value.trim(); if (!name){ toast("Il manque le nom"); return; }
+  const name = fT.name.value.trim(); if (!name) return;
   const t = editId ? cfg.tiles.find(x => x.id === editId) : { id:uid() };
   Object.assign(t, {
-    name, icon:fT.icon.value.trim(), color:editColor, hidden:fT.hidden.checked,
+    name, icon:fT.img.value.trim() || editPic, color:editColor, hidden:fT.hidden.checked,
     android:{ mode:fT.aMode.value, pkg:fT.aPkg.value.trim(), deep:fT.aDeep.value.trim(), url:fT.aUrl.value.trim() },
     pc:{ mode:fT.pMode.value, url:fT.pUrl.value.trim() }
   });
   if (!editId) cfg.tiles.push(t);
+  const fi = cfg.favs.indexOf(t.id);
+  if (fT.fav.checked && fi < 0) cfg.favs.push(t.id);
+  if (!fT.fav.checked && fi >= 0) cfg.favs.splice(fi, 1);
   save(); render(); toast("Enregistré");
 });
 $("#bDel").addEventListener("click", () => {
@@ -563,7 +609,7 @@ $("#bDel").addEventListener("click", () => {
   if (!confirm(`Supprimer « ${t.name} » ?`)) return;
   cfg.tiles = cfg.tiles.filter(x => x.id !== editId); cfg.favs = cfg.favs.filter(x => x !== editId);
   delete usage[editId]; LS.put(K.use, usage);
-  save(); dTile.close("cancel"); render(); toast("Tuile supprimée");
+  save(); dTile.close("cancel"); render(); toast("Appli supprimée");
 });
 
 /* ═════ Jeton commun ═════ */
@@ -572,7 +618,7 @@ function patState(){
   const pat = LS.get(K.pat) || "";
   $("#patState").innerHTML = APPS.map(a => {
     const c = appCfg(a), tok = c?.token || "";
-    const s = !tok ? `<b class="ko">aucun jeton</b>` : (pat && tok === pat ? `<b class="ok">✓ identique</b>` : `<b class="mid">différent</b>`);
+    const s = !tok ? `<b class="ko">aucun jeton</b>` : (pat && tok === pat ? `<b class="ok" style="display:inline-flex;align-items:center;gap:4px">${svg("check")}identique</b>` : `<b class="mid">différent</b>`);
     const pass = c?.pass ? "" : ` · <span class="mid">phrase à saisir dans l'appli</span>`;
     return `<div class="st"><span>${a.name}</span><span>${s}${tok ? pass : ""}</span></div>`;
   }).join("");
@@ -658,7 +704,7 @@ $("#fIn").addEventListener("submit", async e => {
     cfg.favs = cfg.favs.filter(id => cfg.tiles.some(t => t.id === id));
     save();
   }
-  $("#dIn").close(); render(); toast("Ce téléphone est configuré ✓");
+  $("#dIn").close(); render(); toast("Ce téléphone est configuré");
 });
 
 /* ═════ Réglages ═════ */
@@ -695,6 +741,7 @@ $("#fImp").addEventListener("change", async e => {
   e.target.value = "";
 });
 $("#bUse").addEventListener("click", () => { if (confirm("Remettre le compteur d'usage à zéro ?")){ usage = {}; LS.put(K.use, usage); render(); toast("Usage remis à zéro"); } });
+
 
 /* ═════ Démarrage ═════ */
 $("#bEdit").addEventListener("click", () => { editing = !editing; render(); });

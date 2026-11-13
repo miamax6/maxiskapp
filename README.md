@@ -19,4 +19,4 @@ Les phrases secrètes restent propres à chaque appli.
 Réglages → « Afficher le QR code ». Le QR est chiffré (AES-GCM) ; le code s'affiche à côté.
 
 ## Fichiers
-`index.html` (tout), `qrcode.js` (qrcode-generator, MIT), `sw.js`, `manifest.webmanifest`, icônes.
+`index.html` (tout, pictos Lucide intégrés — licence ISC), `qrcode.js` (qrcode-generator, MIT), `sw.js`, `manifest.webmanifest`, icônes.
