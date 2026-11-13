@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maquette « plateau » · MaxiskApp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Poppins:wght@600;700&display=swap">
+<style>
+/* Fonds unis, aucune lueur, aucun dégradé décoratif : les logos font tout le travail. */
+:root{ --bg:#0B0D12; --fg:#F2F4F8; --muted:#8D96A8; --line:#232834; --btn:#151922; --sh:0,0,0; --shA:.55; --edge:.5 }
+:root[data-theme="light"]{ --bg:#F1F2F5; --fg:#11151C; --muted:#5B6474; --line:#DCDFE6; --btn:#FFFFFF; --sh:25,32,56; --shA:.28; --edge:.62 }
+@media (prefers-color-scheme: light){
+  :root[data-theme="auto"]{ --bg:#F1F2F5; --fg:#11151C; --muted:#5B6474; --line:#DCDFE6; --btn:#FFFFFF; --sh:25,32,56; --shA:.28; --edge:.62 }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:400 16px/1.5 "Open Sans",system-ui,sans-serif;
+  user-select:none;-webkit-user-select:none;overscroll-behavior:none}
+.app{max-width:1180px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;
+  padding:max(18px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+header{display:flex;align-items:flex-end;gap:8px;padding-top:8px}
+header div{flex:1}
+@media (max-width:520px){#theme{font-size:0;gap:0;padding:0} header h1{font-size:27px}}
+header small{color:var(--muted);font-size:14px;font-weight:600}
+header h1{margin:2px 0 0;font:700 30px/1.15 Poppins,sans-serif}
+.b{height:48px;min-width:48px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--btn);color:var(--fg);
+  font:600 14px "Open Sans",sans-serif;display:flex;align-items:center;gap:8px;cursor:pointer}
+.b svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.note{margin:8px 0 0;color:var(--muted);font-size:13px}
+
+/* Zone tactile : le doigt (ou la souris) attire et soulève les logos */
+.stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:44px;padding:28px 0;touch-action:none}
+h2{margin:0 0 18px;font:600 13px/1 "Open Sans",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
+.grid{display:grid;justify-content:center;gap:var(--g) var(--g)}
+.slot{width:var(--s);display:flex;flex-direction:column;align-items:center;gap:calc(var(--s) * .09 + 6px);cursor:pointer}
+.box{position:relative;width:var(--s);height:var(--s)}
+.obj{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.obj > *{position:absolute;inset:0;width:100%;height:100%;display:block}
+.obj img{object-fit:contain}
+.obj .sq{border-radius:23%}
+.obj .edge{filter:brightness(var(--edge))}
+.sh{position:absolute;left:8%;right:8%;bottom:-9%;height:22%;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(var(--sh),var(--shA)),rgba(var(--sh),0));will-change:transform,opacity}
+.lbl{max-width:calc(var(--s) + 12px);font-weight:600;font-size:var(--f);line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pk{border-radius:23%;background:#F6EBDD;display:grid!important;place-items:center;color:#0F766E}
+.pk svg{width:56%;height:56%;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--fg);color:var(--bg);font-weight:700;padding:10px 16px;border-radius:12px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div><small id="today"></small><h1>MaxiskApp</h1></div>
+    <button class="b" id="nfav" aria-label="Nombre de favoris"></button>
+    <button class="b" id="theme" aria-label="Changer de thème"></button>
+  </header>
+  <p class="note">Maquette : pose le doigt et promène-le sur les logos, relâche sur celui à ouvrir. Penche le téléphone. Sur PC : passe la souris.</p>
+  <div class="stage" id="stage">
+    <section><h2>Favoris</h2><div class="grid" id="favs"></div></section>
+    <section id="secOth"><h2>Autres applis</h2><div class="grid" id="oth"></div></section>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const P = "https://miamax6.github.io/";
+const RECEIPT = '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>';
+const im = (src, sq) => cls => `<img class="${cls}${sq ? " sq" : ""}" src="${src}" alt="" draggable="false">`;
+const ALL = [
+  { n:"Budget",         art:im(P + "mbauxdijsekta/icon.svg") },
+  { n:"Home Assistant", art:im("logos/homeassistant.webp") },
+  { n:"Jungle",         art:im(P + "your-tiny-jungle/icons/icon.svg") },
+  { n:"Yam's",          art:im(P + "yam-iamax/icon.svg") },
+  { n:"MusicCast",      art:im("logos/musiccast.webp", true) },
+  { n:"Tricount",       art:cls => `<div class="pk ${cls}"><svg viewBox="0 0 24 24">${RECEIPT}</svg></div>` }
+];
+const $ = s => document.querySelector(s);
+const d = new Date().toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long" });
+$("#today").textContent = d.charAt(0).toUpperCase() + d.slice(1);
+function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 1300); }
+const ls = { get:k => { try { return localStorage.getItem(k); } catch(e){ return null; } }, set:(k, v) => { try { localStorage.setItem(k, v); } catch(e){} } };
+
+/* Thème */
+const SUN = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const MOON = '<svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+const AUTO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor"/></svg>';
+const THEMES = [["auto", AUTO + "Auto"], ["light", SUN + "Clair"], ["dark", MOON + "Sombre"]];
+let th = Math.max(0, THEMES.findIndex(t => t[0] === ls.get("maxisk.mq.theme")));
+function paintTheme(){ document.documentElement.dataset.theme = THEMES[th][0]; $("#theme").innerHTML = THEMES[th][1]; ls.set("maxisk.mq.theme", THEMES[th][0]); }
+$("#theme").addEventListener("click", () => { th = (th + 1) % THEMES.length; paintTheme(); });
+paintTheme();
+
+/* Nombre de favoris (pour tester) */
+const COUNTS = [2, 3, 4, 6]; let ci = Math.max(0, COUNTS.indexOf(+ls.get("maxisk.mq.nfav")));
+$("#nfav").addEventListener("click", () => { ci = (ci + 1) % COUNTS.length; build(); });
+
+/* Objet 3D : le logo empilé en 6 couches = une vraie épaisseur, visible quand il s'incline */
+const LAYERS = 6;
+function slot(a, i){
+  let layers = ""; for (let k = LAYERS - 1; k >= 0; k--) layers += a.art(k ? "edge" : "top").replace('class="', `style="transform:translateZ(${-k * 2.4}px)" class="`);
+  return `<div class="slot" data-i="${i}" role="button" aria-label="${a.n}"><div class="box"><div class="sh"></div><div class="obj">${layers}</div></div><div class="lbl">${a.n}</div></div>`;
+}
+let icons = [];
+function build(){
+  const n = COUNTS[ci]; ls.set("maxisk.mq.nfav", n);
+  $("#nfav").textContent = n + " fav.";
+  $("#favs").innerHTML = ALL.slice(0, n).map(slot).join("");
+  $("#oth").innerHTML = ALL.slice(n).map((a, i) => slot(a, n + i)).join("");
+  $("#secOth").hidden = n >= ALL.length;
+  size();
+}
+function size(){
+  const n = COUNTS[ci], W = $("#stage").clientWidth, phone = W < 700;
+  const cols = phone ? (n <= 3 ? n : n === 4 ? 2 : 3) : n, g = phone ? 22 : 40;
+  const s = Math.floor(Math.min((W - g * (cols - 1)) / cols, phone ? 172 : 196));
+  const f = $("#favs").style; f.setProperty("--s", s + "px"); f.setProperty("--g", g + "px"); f.setProperty("--f", (s > 130 ? 17 : 14) + "px");
+  f.gridTemplateColumns = `repeat(${cols}, ${s}px)`;
+  const o = $("#oth").style, so = phone ? 64 : 80, m = ALL.length - n;
+  o.setProperty("--s", so + "px"); o.setProperty("--g", (phone ? 18 : 30) + "px"); o.setProperty("--f", "12.5px");
+  o.gridTemplateColumns = `repeat(${Math.max(1, Math.min(m, phone ? 4 : 8))}, ${so}px)`;
+  icons = [...document.querySelectorAll(".slot")].map(el => {
+    const r = el.querySelector(".box").getBoundingClientRect();
+    return { el, obj:el.querySelector(".obj"), sh:el.querySelector(".sh"), cx:r.left + r.width / 2 + scrollX, cy:r.top + r.height / 2 + scrollY, s:r.width, v:[0, 0, 0, 0, 0] };
+  });
+  kick();
+}
+addEventListener("resize", size);
+
+/* ═════ Mouvement ═════
+   Chaque logo réagit à la distance du doigt : il se soulève, grossit, penche vers le doigt et glisse un peu vers lui.
+   Tout est amorti (aucun rebond) et recalculé à chaque image : ça suit le doigt en continu. */
+const ptr = { x:0, y:0, on:false };
+let gx = 0, gy = 0, tgx = 0, tgy = 0, raf = 0, last = 0;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function frame(t){
+  const dt = Math.min(48, t - (last || t)); last = t;
+  const k = 1 - Math.exp(-dt / 65); let moving = false;
+  gx += (tgx - gx) * k; gy += (tgy - gy) * k;
+  if (Math.abs(tgx - gx) + Math.abs(tgy - gy) > .01) moving = true;
+  for (const ic of icons){
+    const dx = ptr.x - ic.cx, dy = ptr.y - ic.cy, R = ic.s * 1.5 + 40;
+    let f = ptr.on ? clamp(1 - Math.hypot(dx, dy) / R, 0, 1) : 0; f = f * f * (3 - 2 * f);
+    const nx = clamp(dx / ic.s, -1, 1), ny = clamp(dy / ic.s, -1, 1);
+    const tgt = [f, nx * 20 * f, -ny * 20 * f, dx * .09 * f, dy * .09 * f], v = ic.v;
+    for (let i = 0; i < 5; i++){ v[i] += (tgt[i] - v[i]) * k; if (Math.abs(tgt[i] - v[i]) > .002) moving = true; }
+    const lift = v[0], ry = v[1] + gx, rx = v[2] + gy;
+    ic.obj.style.transform = `perspective(${(ic.s * 4.5).toFixed(0)}px) translate3d(${v[3].toFixed(1)}px,${(v[4] - lift * ic.s * .06).toFixed(1)}px,${(lift * ic.s * .28).toFixed(1)}px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+    ic.sh.style.transform = `translate(${(v[3] - ry * .5).toFixed(1)}px,${(v[4] * .4 + rx * .3 + lift * ic.s * .05).toFixed(1)}px) scale(${(1 + lift * .12).toFixed(3)})`;
+    ic.sh.style.opacity = (1 - lift * .4).toFixed(3);
+    ic.f = f;
+  }
+  if (moving) raf = requestAnimationFrame(frame); else { raf = 0; last = 0; }
+}
+const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
+
+const stage = $("#stage");
+const at = e => { ptr.x = e.pageX; ptr.y = e.pageY; };
+const under = () => icons.reduce((b, ic) => (ic.f > .55 && (!b || ic.f > b.f) ? ic : b), null);
+stage.addEventListener("pointerdown", e => { at(e); ptr.on = true; if (e.pointerType !== "mouse") stage.setPointerCapture(e.pointerId); kick(); });
+stage.addEventListener("pointermove", e => { if (e.pointerType === "mouse" || ptr.on){ at(e); ptr.on = true; kick(); } });
+stage.addEventListener("pointerup", e => {
+  at(e);
+  for (const ic of icons){ const R = ic.s * 1.5 + 40; let f = clamp(1 - Math.hypot(ptr.x - ic.cx, ptr.y - ic.cy) / R, 0, 1); ic.f = f * f * (3 - 2 * f); }
+  const hit = under();
+  if (hit){ toast("Ouvrirait " + ALL[+hit.el.dataset.i].n); if (navigator.vibrate) navigator.vibrate(8); }
+  if (e.pointerType !== "mouse") ptr.on = false;
+  kick();
+});
+stage.addEventListener("pointercancel", () => { ptr.on = false; kick(); });
+stage.addEventListener("pointerleave", e => { if (e.pointerType === "mouse"){ ptr.on = false; kick(); } });
+
+/* Inclinaison du téléphone */
+let base = null;
+addEventListener("deviceorientation", e => {
+  if (e.beta == null) return;
+  if (!base) base = { b:e.beta, g:e.gamma };
+  base.b += (e.beta - base.b) * .004; base.g += (e.gamma - base.g) * .004;
+  tgx = clamp((e.gamma - base.g) * .9, -22, 22); tgy = clamp(-(e.beta - base.b) * .7, -16, 16);
+  kick();
+}, { passive:true });
+
+build();
+addEventListener("load", size);
+</script>
+</body>
+</html>
