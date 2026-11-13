@@ -63,5 +63,8 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "display_override": [
+    "minimal-ui"
   ]
 }
