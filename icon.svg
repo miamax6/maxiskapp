@@ -2,9 +2,9 @@
   <rect width="512" height="512" rx="116" fill="#F6EBDD"/>
   <g transform="translate(0,-18)">
     <path d="M256 100 L396 224 H116 Z" fill="#24505F" stroke="#24505F" stroke-width="28" stroke-linejoin="round"/>
-    <rect x="155" y="252" width="92" height="92" rx="22" fill="#B0603F"/>
-    <rect x="265" y="252" width="92" height="92" rx="22" fill="#6B8E4E"/>
-    <rect x="155" y="362" width="92" height="92" rx="22" fill="#C8962E"/>
+    <rect x="155" y="252" width="92" height="92" rx="22" fill="#2F6B82"/>
+    <rect x="265" y="252" width="92" height="92" rx="22" fill="#2F6B82"/>
+    <rect x="155" y="362" width="92" height="92" rx="22" fill="#2F6B82"/>
     <rect x="265" y="362" width="92" height="92" rx="22" fill="#2F6B82"/>
   </g>
 </svg>
