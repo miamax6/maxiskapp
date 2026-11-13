@@ -17,6 +17,13 @@ small{display:block;color:#888;font-size:12px}
 <a href="https://tricount.com/link/tricounts"><b>T2</b><span>Lien tricount.com/link simple<small>Chrome peut proposer l'appli</small></span></a>
 <a href="intent://launch?id=com.tribab.tricount.android#Intent;scheme=market;package=com.android.vending;end"><b>T3</b><span>Via Play Store « launch »<small>market://launch</small></span></a>
 
+<a href="intent://#Intent;scheme=com.tribab.tricount.android;package=com.tribab.tricount.android;end"><b>T4</b><span>Schéma = nom du paquet (comme M7)<small>le motif qui a marché pour MusicCast</small></span></a>
+<a href="intent://tricount.com/#Intent;scheme=https;package=com.tribab.tricount.android;end"><b>T5</b><span>Page d'accueil tricount.com forcée vers l'appli<small>https + paquet, sans chemin</small></span></a>
+<a href="intent://tricount.com/link/new#Intent;scheme=https;package=com.tribab.tricount.android;end"><b>T6</b><span>tricount.com/link/new<small>« Nouveau tricount »</small></span></a>
+<a href="intent://tricount.com/link/join#Intent;scheme=https;package=com.tribab.tricount.android;end"><b>T7</b><span>tricount.com/link/join<small>« Rejoindre »</small></span></a>
+<a href="intent://#Intent;scheme=tricount;package=com.tribab.tricount.android;end"><b>T8</b><span>Schéma « tricount:// » (deviné)<small>avec paquet</small></span></a>
+<a href="intent://tricount.com/link/tricounts#Intent;scheme=https;package=com.tribab.tricount.android;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end"><b>T9</b><span>Comme T1, action VIEW explicite<small>au cas où</small></span></a>
+
 <h2>🔊 MusicCast</h2>
 <a href="intent://launch?id=com.yamaha.av.musiccastcontroller#Intent;scheme=market;package=com.android.vending;end"><b>M1</b><span>Via Play Store « launch »<small>market://launch</small></span></a>
 <a href="intent://play.google.com/store/apps/details?id=com.yamaha.av.musiccastcontroller&amp;launch=true#Intent;scheme=https;package=com.android.vending;end"><b>M2</b><span>Play Store avec launch=true<small>https + paquet Play Store</small></span></a>

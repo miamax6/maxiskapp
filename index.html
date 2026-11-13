@@ -28,18 +28,21 @@
   --shadow:0 4px 10px rgba(20,35,40,.12); --scrim:rgba(20,30,35,.45);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{background:var(--bg);transition:background .3s}
-body{margin:0;min-height:100dvh;color:var(--fg);font:400 16px/1.5 var(--f-body);overflow-x:hidden;user-select:none;-webkit-user-select:none}
+html{background:var(--bg);transition:background .3s;height:100%;overflow:hidden;overscroll-behavior:none}
+body{margin:0;height:100%;position:fixed;inset:0;width:100%;overflow:hidden;overscroll-behavior:none;color:var(--fg);font:400 16px/1.5 var(--f-body);user-select:none;-webkit-user-select:none}
 button,input,select{font:inherit;color:inherit}
 input,select{user-select:text;-webkit-user-select:text}
 :focus-visible{outline:3px solid var(--ring);outline-offset:3px}
 svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
-.app{max-width:1180px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;
+.app{max-width:1180px;margin:0 auto;height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column;
   padding:max(18px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
 header{display:flex;align-items:flex-end;gap:8px;padding-top:8px}
 header .ttl{flex:1}
 header small{display:block;color:var(--muted);font-size:14px;font-weight:600}
 header h1{margin:2px 0 0;font:700 28px/1.15 var(--f-head)}
+header .ttl{min-width:0}
+header small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:420px){header h1{font-size:23px}header small{font-size:13px}header{gap:6px}.ibtn{min-width:44px;height:44px;padding:0 9px}}
 .ibtn{min-width:48px;height:48px;padding:0 12px;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--r-sm);cursor:pointer;
   background:var(--card);border:1px solid var(--border);color:var(--fg);font-weight:700;transition:transform .1s ease-out}
 .ibtn:active{transform:scale(.94)}
@@ -48,7 +51,7 @@ header h1{margin:2px 0 0;font:700 28px/1.15 var(--f-head)}
 .hint{color:var(--muted);font-size:14px;margin:10px 0 0;text-align:center}
 
 /* ═════ Plateau ═════ */
-.stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:44px;padding:28px 0;touch-action:pan-y}
+.stage{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:var(--sg,44px);padding:var(--sp,28px) 0;touch-action:none}
 .stage h2{margin:0 0 18px;font:700 13px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
 .grid{display:grid;justify-content:center;gap:var(--g)}
 .slot{width:var(--s);display:flex;flex-direction:column;align-items:center;text-decoration:none;color:inherit;cursor:pointer;border-radius:16px;-webkit-touch-callout:none}
@@ -81,6 +84,9 @@ dialog{border:none;padding:0;background:transparent;color:inherit;width:min(560p
 dialog::backdrop{background:var(--scrim)}
 dialog[open]{animation:dlg 300ms var(--out)}
 @keyframes dlg{from{opacity:0;transform:translateY(24px)}}
+.grab{width:44px;height:5px;border-radius:3px;background:var(--border);margin:-6px auto 12px;flex:none}
+.sheet.drag{transition:none}
+
 .sheet{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:0 24px 48px -12px rgba(0,0,0,.35);padding:20px;max-height:calc(100dvh - 24px);overflow:auto}
 .sheet h3{margin:0;font:700 22px/1.2 var(--f-head)}
 .sheet h4{margin:24px 0 8px;font:600 16px/1.3 var(--f-head);display:flex;align-items:center;gap:8px}
@@ -219,7 +225,6 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
   <label class="chk"><input type="checkbox" id="sFx"><span>Garder les effets même si le téléphone demande moins d'animations</span></label>
   <label class="chk"><input type="checkbox" id="sCalm"><span>Couper tous les effets</span></label>
   <p class="small" id="fxInfo"></p>
-  <label class="chk"><input type="checkbox" id="sTab"><span>Sur PC, ouvrir dans un nouvel onglet</span></label>
   <label class="f"><span>Appareil</span><select class="in" id="sPlat"><option value="auto">Détection automatique</option><option value="android">Toujours Android</option><option value="pc">Toujours PC</option></select></label>
 
   <h4><svg class="i" aria-hidden="true"><use href="#download"/></svg>Sauvegarde des applis</h4>
@@ -246,7 +251,7 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
 <script src="qrcode.js"></script>
 <script>
 "use strict";
-const VERSION = "4.1.0";
+const VERSION = "4.2.0";
 
 const LS = {
   get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
@@ -288,7 +293,7 @@ const DEFAULT_TILES = () => [
 
 let cfg = LS.json(K.cfg, null);
 if (!cfg || !Array.isArray(cfg.tiles)) cfg = { v:5, tiles:DEFAULT_TILES(), favs:["budget","ha","jungle"], prefs:{} };
-cfg.prefs = Object.assign({ theme:"auto", amb:"petrole", big:2, tilt:true, fx:false, calm:false, newTab:true, plat:"auto", name:"" }, cfg.prefs || {});
+cfg.prefs = Object.assign({ theme:"auto", amb:"petrole", big:2, tilt:true, fx:false, calm:false, plat:"auto", name:"" }, cfg.prefs || {});
 cfg.favs = (cfg.favs || []).filter(id => cfg.tiles.some(t => t.id === id));
 /* Migration v1 → v2 : émojis → pictos, anciennes couleurs → palette contrastée, lien direct Tricount */
 if ((cfg.v || 1) < 2){
@@ -363,7 +368,7 @@ function target(t){
   }
   const p = t.pc || {};
   if (p.mode === "hide") return { off:true };
-  return p.url ? { href:p.url, blank:cfg.prefs.newTab, sub:"Web" } : { todo:true };
+  return p.url ? { href:p.url, sub:"Web" } : { todo:true };
 }
 
 /* ═════ Thème et fond ═════ */
@@ -399,7 +404,7 @@ function slotHtml(t){
   const tg = target(t), isFav = cfg.favs.includes(t.id), cls = ["slot"];
   if (tg.todo) cls.push("todo");
   if (tg.off || t.hidden) cls.push("off");
-  const href = !editing && tg.href ? ` href="${esc(tg.href)}"${tg.blank ? ' target="_blank" rel="noopener"' : ""}` : "";
+  const href = !editing && tg.href ? ` href="${esc(tg.href)}"` : "";
   const sub = tg.todo ? "À régler" : (editing && (tg.off || t.hidden) ? "Masquée" : "");
   const badge = `<span class="badge${isFav ? " on" : ""}" data-star role="button" tabindex="0" aria-pressed="${isFav}" aria-label="${isFav ? "Retirer " : "Mettre "}${esc(t.name)}${isFav ? " de la tête" : " en tête"}">${svg("star")}</span>`;
   return `<a class="${cls.join(" ")}" data-id="${esc(t.id)}"${href} ${href ? "" : 'role="button" tabindex="0"'} aria-label="${esc(t.name)}${tg.todo ? ", à régler" : ""}" draggable="false">`
@@ -429,14 +434,21 @@ function render(){
   size();
 }
 function size(){
-  const W = $("#stage").clientWidth, phone = W < 700, n = Math.max(1, nBig), m = $("#oth").children.length;
+  const st = $("#stage"), W = st.clientWidth, H = st.clientHeight, phone = W < 700, n = Math.max(1, nBig), m = $("#oth").children.length;
   const cols = phone ? (n <= 3 ? n : n === 4 ? 2 : 3) : Math.min(n, 6), g = phone ? 22 : 40;
-  const s = Math.floor(Math.min((W - g * (cols - 1)) / cols, phone ? 172 : 196));
+  const rows = Math.ceil(n / cols), ocols = Math.max(1, Math.min(m, phone ? 4 : 8)), orows = m ? Math.ceil(m / ocols) : 0;
+  let s = Math.floor(Math.min((W - g * (cols - 1)) / cols, phone ? 172 : 196)), so = phone ? 64 : 80, sg = 44, sp = 28;
+  const need = () => rows * (s * 1.09 + 6 + 26) + (rows - 1) * g
+    + (orows ? sg + 31 + orows * (so * 1.09 + 6 + 20) + (orows - 1) * (phone ? 18 : 30) : 0) + sp * 2;
+  while (need() > H && (s > 56 || so > 44)) {       // tout doit tenir à l'écran, sans défilement
+    if (sp > 10) sp -= 2; else if (sg > 18) sg -= 2; else if (s > 56) s -= 2; else so -= 2;
+  }
+  st.style.setProperty("--sg", sg + "px"); st.style.setProperty("--sp", sp + "px");
   const f = $("#favs").style; f.setProperty("--s", s + "px"); f.setProperty("--g", `${g}px`); f.setProperty("--f", (s > 130 ? 17 : 14) + "px");
   f.gridTemplateColumns = `repeat(${cols}, ${s}px)`;
-  const o = $("#oth").style, so = phone ? 64 : 80;
+  const o = $("#oth").style;
   o.setProperty("--s", so + "px"); o.setProperty("--g", phone ? "22px 18px" : "30px"); o.setProperty("--f", "12.5px");
-  o.gridTemplateColumns = `repeat(${Math.max(1, Math.min(m, phone ? 4 : 8))}, ${so}px)`;
+  o.gridTemplateColumns = `repeat(${ocols}, ${so}px)`;
   icons = [...document.querySelectorAll("#stage .slot")].map(el => {
     const r = el.querySelector(".ibox").getBoundingClientRect();
     return { el, id:el.dataset.id, obj:el.querySelector(".obj"), sh:el.querySelector(".sh"), cx:r.left + r.width / 2 + scrollX, cy:r.top + r.height / 2 + scrollY, s:r.width, v:[0, 0, 0, 0, 0], f:0 };
@@ -484,7 +496,7 @@ function activate(id){
   const tg = target(tile);
   if (tg.todo){ openTile(id); toast("Indique ce que cette appli doit ouvrir sur cet appareil"); return; }
   countUse(id); if (navigator.vibrate) navigator.vibrate(8);
-  if (tg.blank) window.open(tg.href, "_blank", "noopener"); else location.href = tg.href;
+  location.href = tg.href;
 }
 const stage = $("#stage");
 let handledAt = 0, longT = 0, longFired = false, sx = 0, sy = 0;
@@ -725,14 +737,55 @@ function openSet(){
   $("#fxInfo").textContent = (reduced.matches ? "Ton téléphone demande moins d'animations. " : "")
     + (!isAndroid() ? "Inclinaison : seulement sur Android." : tiltOn ? (gyroN ? "Inclinaison : capteur actif." : "Inclinaison : aucun signal du capteur pour l'instant.") : "Inclinaison : coupée.");
   $("#sTheme").value = cfg.prefs.theme;
-  $("#sTilt").checked = !!cfg.prefs.tilt; $("#sCalm").checked = !!cfg.prefs.calm; $("#sTab").checked = !!cfg.prefs.newTab;
+  $("#sTilt").checked = !!cfg.prefs.tilt; $("#sCalm").checked = !!cfg.prefs.calm;
   $("#sPlat").value = cfg.prefs.plat; $("#qrOut").innerHTML = ""; $("#ver").textContent = VERSION;
   patState(); dSet.showModal();
 }
 dSet.addEventListener("click", e => { if (e.target.closest("[data-close]")) dSet.close(); });
+
+/* ═════ Fenêtres : se ferment en les glissant vers le bas, ou en touchant à l'extérieur ═════ */
+document.querySelectorAll("dialog").forEach(dlg => {
+  const sh = dlg.querySelector(".sheet"); if (!sh) return;
+  const g = document.createElement("div"); g.className = "grab"; g.setAttribute("aria-hidden", "true"); sh.prepend(g);
+  let downOnBackdrop = false, noClickUntil = 0;
+  dlg.addEventListener("pointerdown", e => { downOnBackdrop = e.target === dlg; });
+  dlg.addEventListener("click", e => { if (e.target === dlg && downOnBackdrop && Date.now() > noClickUntil) dlg.close(); });
+  let S = null;
+  const scrim = a => dlg.style.setProperty("--scrim", `rgba(20,30,35,${a.toFixed(3)})`);
+  sh.addEventListener("touchstart", e => {
+    if (e.touches.length !== 1 || sh.scrollTop > 0) { S = null; return; }
+    S = { y0:e.touches[0].clientY, act:false, dy:0, last:e.touches[0].clientY, t:performance.now(), vy:0 };
+  }, { passive:true });
+  sh.addEventListener("touchmove", e => {
+    if (!S) return;
+    const y = e.touches[0].clientY, dy = y - S.y0;
+    if (!S.act) {
+      if (dy > 8 && sh.scrollTop <= 0) { S.act = true; dlg.style.animation = "none"; }
+      else { if (dy < -8 || sh.scrollTop > 0) S = null; return; }
+    }
+    const now = performance.now(); S.vy = (y - S.last) / Math.max(1, now - S.t); S.last = y; S.t = now;
+    S.dy = Math.max(0, dy - 8);
+    dlg.style.transform = `translate3d(0,${S.dy}px,0)`;
+    scrim(.45 * (1 - Math.min(1, S.dy / dlg.offsetHeight)));
+    e.preventDefault();
+  }, { passive:false });
+  const end = () => {
+    const s = S; S = null; if (!s || !s.act) return;
+    noClickUntil = Date.now() + 350;
+    const h = dlg.offsetHeight, close = s.dy > h * .3 || s.vy > .6;
+    const clean = () => { dlg.style.transform = ""; dlg.style.animation = ""; dlg.style.removeProperty("--scrim"); };
+    if (!dlg.animate) { if (close) dlg.close(); clean(); return; }
+    const a = dlg.animate([{ transform:`translate3d(0,${s.dy}px,0)` }, { transform: close ? `translate3d(0,${h}px,0)` : "translate3d(0,0,0)" }],
+      { duration: close ? 200 : 240, easing:"cubic-bezier(.3,.7,.4,1)", fill:"forwards" });
+    a.onfinish = () => { if (close) dlg.close(); a.cancel(); clean(); };
+  };
+  sh.addEventListener("touchend", end); sh.addEventListener("touchcancel", end);
+  dlg.addEventListener("close", () => { dlg.style.transform = ""; dlg.style.animation = ""; dlg.style.removeProperty("--scrim"); });
+});
+
 $("#sShow").addEventListener("change", e => { $("#sPat").type = e.target.checked ? "text" : "password"; });
 $("#sName").addEventListener("input", e => { cfg.prefs.name = e.target.value; save(); render(); });
-[["#sTilt","tilt"],["#sFx","fx"],["#sCalm","calm"],["#sTab","newTab"]].forEach(([s, k]) => $(s).addEventListener("change", e => { cfg.prefs[k] = e.target.checked; save(); setTilt(); render(); kick(); }));
+[["#sTilt","tilt"],["#sFx","fx"],["#sCalm","calm"]].forEach(([s, k]) => $(s).addEventListener("change", e => { cfg.prefs[k] = e.target.checked; save(); setTilt(); render(); kick(); }));
 $("#sPlat").addEventListener("change", e => { cfg.prefs.plat = e.target.value; save(); setTilt(); render(); });
 $("#bPat").addEventListener("click", () => {
   const pat = $("#sPat").value.trim();
