@@ -190,8 +190,10 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
 
   <fieldset class="card"><legend><svg class="i" aria-hidden="true"><use href="#monitor"/></svg>Sur PC</legend>
     <label class="f"><span>Ouvrir</span><select class="in" name="pMode">
-      <option value="url">Un lien</option><option value="hide">Rien (masquer)</option></select></label>
+      <option value="url">Un lien</option><option value="exe">Un programme Windows (.exe)</option><option value="hide">Rien (masquer)</option></select></label>
     <div data-show="pMode=url"><label class="f"><span>Adresse</span><input class="in" name="pUrl" placeholder="https://…" autocapitalize="off" spellcheck="false"></label></div>
+    <div data-show="pMode=exe"><label class="f"><span>Chemin du .exe</span><input class="in" name="pExe" placeholder="C:\Program Files\…\appli.exe" autocapitalize="off" spellcheck="false"></label>
+      <p class="small">Seulement dans <b>Program Files</b> ou <b>Program Files (x86)</b>. Applis du Store acceptées. Il faut avoir installé le lanceur PC une fois (Réglages).</p></div>
   </fieldset>
 
   <label class="chk" style="margin-top:12px"><input type="checkbox" name="hidden"><span>Masquer cette appli</span></label>
@@ -229,6 +231,10 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
   <p class="small" id="fxInfo"></p>
   <label class="f"><span>Appareil</span><select class="in" id="sPlat"><option value="auto">Détection automatique</option><option value="android">Toujours Android</option><option value="pc">Toujours PC</option></select></label>
 
+  <h4><svg class="i" aria-hidden="true"><use href="#monitor"/></svg>Programmes Windows</h4>
+  <p class="small">Pour qu'une appli ouvre un .exe sur ce PC : installe le lanceur une fois (pas besoin d'être administrateur). Windows peut afficher « Windows a protégé votre ordinateur » : « Informations complémentaires » puis « Exécuter quand même ». Au premier lancement, le navigateur demande l'autorisation : coche « Toujours autoriser ».</p>
+  <div class="btns" style="margin-top:8px"><a class="btn" href="lanceur/installer-lanceur.cmd" download="installer-lanceur-maxiskapp.cmd">Télécharger le lanceur PC</a></div>
+
   <h4><svg class="i" aria-hidden="true"><use href="#download"/></svg>Sauvegarde des applis</h4>
   <p class="small">Fichier sans jeton ni phrase secrète.</p>
   <div class="btns" style="margin-top:8px">
@@ -253,7 +259,7 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
 <script src="qrcode.js"></script>
 <script>
 "use strict";
-const VERSION = "4.2.0";
+const VERSION = "4.3.0";
 
 const LS = {
   get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
@@ -370,8 +376,10 @@ function target(t){
   }
   const p = t.pc || {};
   if (p.mode === "hide") return { off:true };
+  if (p.mode === "exe") return exeOk(p.exe) ? { href:"maxisk-run:" + encodeURIComponent(p.exe.trim()), sub:"Programme" } : { todo:true };
   return p.url ? { href:p.url, sub:"Web" } : { todo:true };
 }
+function exeOk(x){ return /^[a-z]:\\program files( \(x86\))?\\.+\.exe$/i.test((x || "").trim()) && !/\\\.\.\\/.test(x); }
 
 /* ═════ Thème et fond ═════ */
 const AMB = [
@@ -605,7 +613,7 @@ function openTile(id){
   fT.round.checked = !!t.round;
   fT.fav.checked = !!id && cfg.favs.includes(id);
   fT.aMode.value = t.android?.mode || "url"; fT.aPkg.value = t.android?.pkg || ""; fT.aDeep.value = t.android?.deep || ""; fT.aUrl.value = t.android?.url || "";
-  fT.pMode.value = t.pc?.mode || "url"; fT.pUrl.value = t.pc?.url || "";
+  fT.pMode.value = t.pc?.mode || "url"; fT.pUrl.value = t.pc?.url || ""; fT.pExe.value = t.pc?.exe || "";
   fT.hidden.checked = !!t.hidden;
   $("#bDel").hidden = !id;
   paintPicks(); syncShow(); paintPos(); dTile.showModal();
@@ -618,7 +626,7 @@ dTile.addEventListener("close", () => {
   Object.assign(t, {
     name, icon:editImg || editPic, round:fT.round.checked, hidden:fT.hidden.checked,
     android:{ mode:fT.aMode.value, pkg:fT.aPkg.value.trim(), deep:fT.aDeep.value.trim(), url:fT.aUrl.value.trim() },
-    pc:{ mode:fT.pMode.value, url:fT.pUrl.value.trim() }
+    pc:{ mode:fT.pMode.value, url:fT.pUrl.value.trim(), exe:fT.pExe.value.trim().replace(/^"|"$/g, "") }
   });
   if (!editId) cfg.tiles.push(t);
   const fi = cfg.favs.indexOf(t.id);
