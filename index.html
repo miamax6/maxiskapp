@@ -220,12 +220,12 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
   <div class="btns" style="margin-top:8px"><button class="btn" id="bQr"><svg class="i" aria-hidden="true"><use href="#qr-code"/></svg>Afficher le QR code</button></div>
   <div id="qrOut"></div>
 
-  <h4><svg class="i" aria-hidden="true"><use href="#sparkles"/></svg>Effets</h4>
+  <h4><svg class="i" aria-hidden="true"><use href="#sparkles"/></svg>Apparence et mouvements</h4>
   <div class="f" style="margin-top:16px"><span class="lab" id="lAmb">Couleur du fond</span><div class="amb" id="amb" role="group" aria-labelledby="lAmb"></div></div>
-  <label class="f"><span>Thème</span><select class="in" id="sTheme"><option value="auto">Comme le téléphone</option><option value="light">Clair</option><option value="dark">Sombre</option></select></label>
-  <label class="chk"><input type="checkbox" id="sTilt"><span>Inclinaison du téléphone (un peu de batterie)</span></label>
-  <label class="chk"><input type="checkbox" id="sFx"><span>Garder les effets même si le téléphone demande moins d'animations</span></label>
-  <label class="chk"><input type="checkbox" id="sCalm"><span>Couper tous les effets</span></label>
+  <label class="f"><span>Thème</span><select class="in" id="sTheme"><option value="auto">Comme l'appareil</option><option value="light">Clair</option><option value="dark">Sombre</option></select></label>
+  <label class="chk"><input type="checkbox" id="sTilt"><span>Les logos bougent quand on penche le téléphone (un peu de batterie)</span></label>
+  <label class="chk"><input type="checkbox" id="sFx"><span>Garder les mouvements même si l'appareil demande moins d'animations</span></label>
+  <label class="chk"><input type="checkbox" id="sCalm"><span>Logos fixes : couper tous les mouvements (doigt, souris, inclinaison)</span></label>
   <p class="small" id="fxInfo"></p>
   <label class="f"><span>Appareil</span><select class="in" id="sPlat"><option value="auto">Détection automatique</option><option value="android">Toujours Android</option><option value="pc">Toujours PC</option></select></label>
 
@@ -253,7 +253,7 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
 <script src="qrcode.js"></script>
 <script>
 "use strict";
-const VERSION = "4.3.1";
+const VERSION = "4.4.0";
 
 const LS = {
   get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
@@ -288,9 +288,7 @@ const DEFAULT_TILES = () => [
   { id:"ha",      name:"Home Assistant", icon:"logos/homeassistant.webp", color:"#0E7490",
     android:{ mode:"app", pkg:"io.homeassistant.companion.android", deep:"homeassistant://navigate/" }, pc:{ mode:"url", url:"" } },
   { id:"musiccast", name:"MusicCast", icon:"logos/musiccast.webp", round:true, color:"#7C3AED",
-    android:{ mode:"app", pkg:"com.yamaha.av.musiccastcontroller", deep:"com.yamaha.av.musiccastcontroller://" }, pc:{ mode:"url", url:"" } },
-  { id:"tricount", name:"Tricount", icon:"logos/tricount.webp", round:true, color:"#0F766E",
-    android:{ mode:"app", pkg:"com.tribab.tricount.android", deep:"https://tricount.com/link/tricounts" }, pc:{ mode:"url", url:"https://tricount.com/" } }
+    android:{ mode:"app", pkg:"com.yamaha.av.musiccastcontroller", deep:"com.yamaha.av.musiccastcontroller://" }, pc:{ mode:"url", url:"" } }
 ];
 
 let cfg = LS.json(K.cfg, null);
@@ -337,6 +335,12 @@ if (cfg.v < 4){
 if (cfg.v < 5){
   cfg.tiles.forEach(t => { if (t.id === "tricount" && (!t.icon || t.icon === "receipt")){ t.icon = "logos/tricount.webp"; t.round = true; } });
   cfg.v = 5; LS.put(K.cfg, cfg);
+}
+/* Migration v5 → v6 : Tricount supprimé (aucun lien ne l'ouvrait) */
+if (cfg.v < 6){
+  cfg.tiles = cfg.tiles.filter(t => t.id !== "tricount");
+  cfg.favs = (cfg.favs || []).filter(id => id !== "tricount");
+  cfg.v = 6; LS.put(K.cfg, cfg);
 }
 let usage = LS.json(K.use, {});
 const save = () => LS.put(K.cfg, cfg);
@@ -740,6 +744,7 @@ function openSet(){
     + (!isAndroid() ? "Inclinaison : seulement sur Android." : tiltOn ? (gyroN ? "Inclinaison : capteur actif." : "Inclinaison : aucun signal du capteur pour l'instant.") : "Inclinaison : coupée.");
   $("#sTheme").value = cfg.prefs.theme;
   $("#sTilt").checked = !!cfg.prefs.tilt; $("#sCalm").checked = !!cfg.prefs.calm;
+  $("#sTilt").closest("label").hidden = !isAndroid();
   $("#sPlat").value = cfg.prefs.plat; $("#qrOut").innerHTML = ""; $("#ver").textContent = VERSION;
   patState(); dSet.showModal();
 }
