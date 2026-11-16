@@ -253,7 +253,7 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
 <script src="qrcode.js"></script>
 <script>
 "use strict";
-const VERSION = "4.4.0";
+const VERSION = "4.4.1";
 
 const LS = {
   get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
@@ -553,12 +553,17 @@ function onOrient(e){
   tgx = clamp((e.gamma - base.g) * .9, -22, 22); tgy = clamp(-(e.beta - base.b) * .7, -16, 16);
   kick();
 }
+let sensorPerm = "";
+async function checkSensorPerm(){        // Chrome indique si les capteurs de mouvement sont bloqués pour ce site
+  try { if (DeviceOrientationEvent.requestPermission) sensorPerm = await DeviceOrientationEvent.requestPermission(); } catch(e){}
+  try { const r = await navigator.permissions?.query({ name:"accelerometer" }); if (r && r.state === "denied") sensorPerm = "denied"; } catch(e){}
+}
 function setTilt(){
   const want = cfg.prefs.tilt && fxOn() && isAndroid() && !document.hidden && "DeviceOrientationEvent" in window;
   if (want === tiltOn) return;
   tiltOn = want; base = null;
-  if (want) addEventListener("deviceorientation", onOrient, { passive:true });
-  else { removeEventListener("deviceorientation", onOrient); tgx = tgy = 0; kick(); }
+  if (want){ addEventListener("deviceorientation", onOrient, { passive:true }); addEventListener("deviceorientationabsolute", onOrient, { passive:true }); checkSensorPerm(); }
+  else { removeEventListener("deviceorientation", onOrient); removeEventListener("deviceorientationabsolute", onOrient); tgx = tgy = 0; kick(); }
 }
 document.addEventListener("visibilitychange", () => { setTilt(); if (!document.hidden){ ptr.on = false; base = null; render(); } });
 addEventListener("pageshow", () => { ptr.on = false; kick(); });
@@ -741,7 +746,7 @@ function openSet(){
   $("#sPat").value = LS.get(K.pat) || ""; $("#sPat").type = "password"; $("#sShow").checked = false;
   $("#sFx").checked = !!cfg.prefs.fx;
   $("#fxInfo").textContent = (reduced.matches ? "Ton téléphone demande moins d'animations. " : "")
-    + (!isAndroid() ? "Inclinaison : seulement sur Android." : tiltOn ? (gyroN ? "Inclinaison : capteur actif." : "Inclinaison : aucun signal du capteur pour l'instant.") : "Inclinaison : coupée.");
+    + (!isAndroid() ? "Inclinaison : seulement sur Android." : tiltOn ? (gyroN ? "Inclinaison : capteur actif." : sensorPerm === "denied" ? "Inclinaison : capteurs de mouvement BLOQUÉS par le navigateur. Chrome → ⋮ → Paramètres → Paramètres des sites → Capteurs de mouvement → autoriser." : "Inclinaison : aucun signal du capteur. Vérifie Chrome → ⋮ → Paramètres → Paramètres des sites → Capteurs de mouvement.") : "Inclinaison : coupée.");
   $("#sTheme").value = cfg.prefs.theme;
   $("#sTilt").checked = !!cfg.prefs.tilt; $("#sCalm").checked = !!cfg.prefs.calm;
   $("#sTilt").closest("label").hidden = !isAndroid();
