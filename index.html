@@ -37,7 +37,8 @@ input,select{user-select:text;-webkit-user-select:text}
 :focus-visible{outline:3px solid var(--ring);outline-offset:3px}
 svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .app{max-width:1180px;margin:0 auto;height:100%;min-height:0;overflow:hidden;display:flex;flex-direction:column;
-  padding:max(18px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+  padding:max(18px,env(safe-area-inset-top)) 0 max(20px,env(safe-area-inset-bottom)) 0;--pl:max(20px,env(safe-area-inset-left));--pr:max(20px,env(safe-area-inset-right))}
+.app>:not(.stage){margin-left:var(--pl);margin-right:var(--pr)}
 header{display:flex;align-items:flex-end;gap:8px;padding-top:8px}
 header .ttl{flex:1}
 header small{display:block;color:var(--muted);font-size:14px;font-weight:600}
@@ -53,7 +54,7 @@ header small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hint{color:var(--muted);font-size:14px;margin:10px 0 0;text-align:center}
 
 /* ═════ Plateau ═════ */
-.stage{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:var(--sg,44px);padding:var(--sp,28px) 0;touch-action:none}
+.stage{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:var(--sg,44px);padding:var(--sp,28px) var(--pr) var(--sp,28px) var(--pl);touch-action:none}
 .stage h2{margin:0 0 18px;font:700 13px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
 .grid{display:grid;justify-content:center;gap:var(--g)}
 .slot{width:var(--s);display:flex;flex-direction:column;align-items:center;text-decoration:none;color:inherit;cursor:pointer;border-radius:16px;-webkit-touch-callout:none}
@@ -253,7 +254,7 @@ fieldset.card legend{font:600 15px var(--f-head);padding:0 6px;display:flex;alig
 <script src="qrcode.js"></script>
 <script>
 "use strict";
-const VERSION = "4.4.2";
+const VERSION = "4.4.3";
 
 const LS = {
   get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
@@ -440,7 +441,7 @@ function render(){
   size();
 }
 function size(){
-  const st = $("#stage"), W = st.clientWidth, H = st.clientHeight, phone = W < 700, n = Math.max(1, nBig), m = $("#oth").children.length;
+  const st = $("#stage"), cs = getComputedStyle(st), W = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight), H = st.clientHeight, phone = W < 700, n = Math.max(1, nBig), m = $("#oth").children.length;
   const cols = phone ? (n <= 3 ? n : n === 4 ? 2 : 3) : Math.min(n, 6), g = phone ? 22 : 40;
   const rows = Math.ceil(n / cols), ocols = Math.max(1, Math.min(m, phone ? 4 : 8)), orows = m ? Math.ceil(m / ocols) : 0;
   let s = Math.floor(Math.min((W - g * (cols - 1)) / cols, phone ? 172 : 196)), so = phone ? 64 : 80, sg = 44, sp = 28;
